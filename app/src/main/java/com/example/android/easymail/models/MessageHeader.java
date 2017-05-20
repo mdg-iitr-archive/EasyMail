@@ -1,5 +1,7 @@
 package com.example.android.easymail.models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.HashMap;
 
 /**
@@ -8,27 +10,29 @@ import java.util.HashMap;
 
 public class MessageHeader {
 
-    public HashMap<String, String> name;
-    public HashMap<String, String> value;
+    @SerializedName("name")
+    public String name;
+    @SerializedName("value")
+    public String value;
 
-    public MessageHeader(HashMap<String, String> name, HashMap<String, String> value) {
+    public MessageHeader(String name, String value) {
         this.name = name;
         this.value = value;
     }
 
-    public HashMap<String, String> getName() {
+    public String getName() {
         return name;
     }
 
-    public HashMap<String, String> getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(HashMap<String, String> value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
-    public void setName(HashMap<String, String> name) {
+    public void setName(String name) {
 
         this.name = name;
     }

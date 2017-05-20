@@ -1,5 +1,7 @@
 package com.example.android.easymail.models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 
 /**
@@ -7,10 +9,16 @@ import java.util.ArrayList;
  */
 
 public class Message {
+
+    @SerializedName("id")
     public int id;
+    @SerializedName("threadId")
     public int threadId;
+    @SerializedName("snippet")
     public String snippet;
+    @SerializedName("labelIds")
     public ArrayList<String> labelIds;
+    @SerializedName("payload")
     public MessagePayload payload;
 
     public Message(int id, int threadId, String snippet, ArrayList<String> labelIds, MessagePayload payload) {

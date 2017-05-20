@@ -87,7 +87,7 @@ public class ResponseActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<Message> call, Response<Message> response) {
                             ArrayList<MessageHeader> headerList = response.body().getPayload().getHeaders();
-                            //String subject = headerList.get(21).getValue("value");
+                            String subject = headerList.get(21).getValue();
                         }
 
                         @Override
