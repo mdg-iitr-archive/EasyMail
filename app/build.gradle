@@ -10,6 +10,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [encoding: "some value", version: "1.0"
+        ]
     }
     buildTypes {
         release {
@@ -26,4 +28,19 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.3.0'
     testCompile 'junit:junit:4.12'
+    compile 'com.google.android.gms:play-services-auth:10.2.4'
+    compile 'pub.devrel:easypermissions:0.3.0'
+    compile 'net.openid:appauth:0.6.0'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+}
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.android.support') {
+            if (!requested.name.startsWith("multidex")) {
+                details.useVersion '25.3.0'
+            }
+        }
+    }
 }
