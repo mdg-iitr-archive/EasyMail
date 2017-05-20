@@ -9,6 +9,11 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.easymail.api.MessageApi;
+import com.example.android.easymail.api.NetworkingFactory;
+import com.example.android.easymail.models.Message;
+import com.example.android.easymail.models.MessageHeader;
+
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
@@ -16,6 +21,12 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ResponseActivity extends AppCompatActivity {
 
@@ -70,7 +81,20 @@ public class ResponseActivity extends AppCompatActivity {
                         ex.printStackTrace();
                     }
                     //use the access token to do something
+                    MessageApi messageApi = NetworkingFactory.getClient(accessToken).create(MessageApi.class);
+                    Call<Message> message = messageApi.getMessage(idToken, "15c250a16e894dc8");
+                    message.enqueue(new Callback<Message>() {
+                        @Override
+                        public void onResponse(Call<Message> call, Response<Message> response) {
+                            ArrayList<MessageHeader> headerList = response.body().getPayload().getHeaders();
+                            //String subject = headerList.get(21).getValue("value");
+                        }
 
+                        @Override
+                        public void onFailure(Call<Message> call, Throwable t) {
+                            Toast.makeText(ResponseActivity.this, "Message Response Failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             });
         }
