@@ -4,6 +4,7 @@ import com.example.android.easymail.models.Message;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Path;
 
 /**
@@ -12,7 +13,8 @@ import retrofit2.http.Path;
 
 public interface MessageApi {
 
-    @GET("gmail/v1/users/{user}/messages/{id}")
-    Call<Message> getMessage(@Path("user") String user,
+    @GET("users/{user}/messages/{id}")
+    Call<Message> getMessage(@Header("Authorization") String accessToken,
+                             @Path("user") String user,
                              @Path("id") String id);
 }

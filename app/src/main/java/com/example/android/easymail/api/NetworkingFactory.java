@@ -15,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkingFactory {
 
-    public static final String BASE_URL = "https://www.googleapis.com/";
+    public static final String BASE_URL = "https://www.googleapis.com/gmail/v1/";
     public static Retrofit retrofit;
 
     public static Retrofit getClient(final String accessToken){
@@ -37,7 +37,6 @@ public class NetworkingFactory {
             retrofit = new Retrofit.Builder().
                     baseUrl(BASE_URL).
                     addConverterFactory(GsonConverterFactory.create()).
-                    client(okHttpClient).
                     build();
         }
         return retrofit;
