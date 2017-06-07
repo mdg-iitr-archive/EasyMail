@@ -13,9 +13,19 @@
         android:id="@+id/txt_response"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txt_response">
     <TextView
         android:id="@+id/txt_token"
-        android:layout_below="@+id/txt_response"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    </ScrollView>
+    <Button
+        android:id="@+id/animation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="TOUCH"/>
 </RelativeLayout>

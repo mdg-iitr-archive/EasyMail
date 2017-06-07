@@ -10,10 +10,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.android.easymail.MainActivity">
 
-    <Button
+    <com.google.android.gms.common.SignInButton
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="LOGIN"/>
+        android:layout_centerInParent="true"/>
+    <TextView
+        android:id="@+id/output"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
 </RelativeLayout>
