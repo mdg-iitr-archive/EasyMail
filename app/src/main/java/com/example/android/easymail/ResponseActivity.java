@@ -9,12 +9,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.android.easymail.adapters.EmailTilesAdapter;
+import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.HashTable;
 import com.google.api.services.gmail.model.Message;
 
 import com.example.android.easymail.api.MessageApi;
@@ -59,42 +65,27 @@ public class ResponseActivity extends AppCompatActivity {
     GoogleAccountCredential credential;
     GoogleCredential googleCredential;
     public static final String[] scopes = {GmailScopes.GMAIL_READONLY};
-    TextView responseText;
-    TextView tokenText;
-    ProgressDialog progressDialog;
-    Button animationButton;
-
+    private TextView responseText;
+    private TextView tokenText;
+    private RecyclerView emailNameInitialRecycler;
+    private ProgressDialog progressDialog;
+    private HashTable hashTable;
+    private List<Message> currentDayMessages;
+    private List<CurrentDayMessageSendersList> currentDayMessageSendersList;
+    private static final int HASH_TABLE_SIZE =  100;
+    private EmailTilesAdapter emailTilesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_response);
 
+        initViews();
+        final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
+        final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
         credential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(scopes)).
                 setBackOff(new ExponentialBackOff());
-
-        final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
-        final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
-
-        responseText = (TextView) findViewById(R.id.txt_response);
-        tokenText = (TextView) findViewById(R.id.txt_token);
-        animationButton = (Button) findViewById(R.id.animation);
-        animationButton.setVisibility(View.GONE);
-        /*
-        animationButton.setOnTouchListener(new View.OnTouchListener() {
-
-            private static final int MIN_CLICK_TIME = 1000;
-            private long startClickTime;
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()) {
-                    case MotionEvent.ACTION_UP
-                    return false;
-                }
-            }
-        });
-*/
         Bundle extras = getIntent().getExtras();
         String isAutoSignedInToken = extras.getString("is_auto_signed_in_token");
         if( isAutoSignedInToken != null ){
@@ -102,9 +93,8 @@ public class ResponseActivity extends AppCompatActivity {
         }
 
         if (response != null){
-                    //use the access token to do something
+            //authorization succeeded\\
             Toast.makeText(context, "Authorization response completed", Toast.LENGTH_SHORT).show();
-            TextView responseText = (TextView) findViewById(R.id.txt_response);
             AuthorizationService service = new AuthorizationService(context);
             service.performTokenRequest(
                     response.createTokenExchangeRequest(),
@@ -112,116 +102,15 @@ public class ResponseActivity extends AppCompatActivity {
                         @Override
                         public void onTokenRequestCompleted(@Nullable TokenResponse resp, @Nullable AuthorizationException ex) {
                             if (resp != null) {
-                                        //exchange succeeded
+                                //exchange succeeded\\
                                 Toast.makeText(context, "Token Request Completed", Toast.LENGTH_SHORT).show();
-                                final TextView tokenText = (TextView) findViewById(R.id.txt_token);
-                                //tokenText.setText(resp.accessToken);
                                 accessToken = resp.accessToken;
                                 AuthState state = new AuthState(response, resp, ex);
                                 writeAuthState(state);
                                 performTask(accessToken);
-
-                                /*
-                                MessageApi messageApi = NetworkingFactory.getClient(accessToken).create(MessageApi.class);
-                                Call<Message> message = messageApi.getMessage(accessToken, "harshit.bansalec@gmail.com", "15c250a16e894dc8");
-                                message.enqueue(new Callback<Message>() {
-                                    @Override
-                                    public void onResponse(Call<Message> call, Response<Message> response) {
-                                        tokenText.setText(response.toString());
-                                        ArrayList<MessageHeader> headerList = response.body().getPayload().getHeaders();
-                                        String subject = headerList.get(21).getValue();
-                                        TextView tokenText = (TextView)findViewById(R.id.txt_token);
-                                        tokenText.setText(subject);
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<Message> call, Throwable t) {
-                                        Toast.makeText(ResponseActivity.this, "Message Response Failed", Toast.LENGTH_SHORT).show();
-                                        TextView tokenText = (TextView)findViewById(R.id.txt_token);
-                                        tokenText.setText(t.toString());
-                                    }
-                                });
-                                */
-                                    } else {
-                                        //authorization failed\\
-                                        TextView responseText = (TextView) findViewById(R.id.txt_response);
-                                        responseText.setText(response.toString());
-                                        Toast.makeText(context, "Token Response Failed", Toast.LENGTH_SHORT).show();
-                                        AuthState state = new AuthState(response, null, ex);
-                                        writeAuthState(state);
-                                    }
-                                }
                             }
-                    );
-                    //Use access token to make api request
-                    AuthState state = readAuthState();
-
-                } else {
-                    Toast.makeText(context, "Authorization response failed", Toast.LENGTH_SHORT).show();
-                }
-
-
-        }
-
-    public void performTask(String accessToken) {
-
-        googleCredential = new GoogleCredential().setAccessToken(accessToken);
-        progressDialog = new ProgressDialog(ResponseActivity.this);
-        progressDialog.setMessage("Calling Gmail API ...");
-        new MakeMessageRequestTask(googleCredential).execute();
-
-    }
-
-    /*
-    if (response == null) {
-        //Token request to exchange the authorization code
-        Toast.makeText(context, "Authorization response completed", Toast.LENGTH_SHORT).show();
-        TextView responseText = (TextView) findViewById(R.id.txt_response);
-        responseText.setText(response.toString());
-        AuthorizationService service = new AuthorizationService(context);
-        service.performTokenRequest(
-                response.createTokenExchangeRequest(),
-                new AuthorizationService.TokenResponseCallback() {
-                    @Override
-                    public void onTokenRequestCompleted
-                            (@Nullable TokenResponse resp, @Nullable AuthorizationException ex) {
-                        if (resp != null) {
-                            //exchange succeeded
-                            Toast.makeText(context, "Token Request Completed", Toast.LENGTH_SHORT).show();
-                            final TextView tokenText = (TextView) findViewById(R.id.txt_token);
-                            //tokenText.setText(resp.accessToken);
-                            accessToken = resp.accessToken;
-                            AuthState state = new AuthState(response, resp, ex);
-                            writeAuthState(state);
-                            googleCredential = new GoogleCredential().setAccessToken(readAuthState().getAccessToken());
-                            progressDialog = new ProgressDialog(ResponseActivity.this);
-                            progressDialog.setMessage("Calling Gmail API ...");
-                            new MakeMessageRequestTask(googleCredential).execute();
-                            /*
-                            MessageApi messageApi = NetworkingFactory.getClient(accessToken).create(MessageApi.class);
-                            Call<Message> message = messageApi.getMessage(accessToken, "harshit.bansalec@gmail.com", "15c250a16e894dc8");
-                            message.enqueue(new Callback<Message>() {
-                                @Override
-                                public void onResponse(Call<Message> call, Response<Message> response) {
-                                    tokenText.setText(response.toString());
-                                    ArrayList<MessageHeader> headerList = response.body().getPayload().getHeaders();
-                                    String subject = headerList.get(21).getValue();
-                                    TextView tokenText = (TextView)findViewById(R.id.txt_token);
-                                    tokenText.setText(subject);
-                                }
-
-                                @Override
-                                public void onFailure(Call<Message> call, Throwable t) {
-                                    Toast.makeText(ResponseActivity.this, "Message Response Failed", Toast.LENGTH_SHORT).show();
-                                    TextView tokenText = (TextView)findViewById(R.id.txt_token);
-                                    tokenText.setText(t.toString());
-                                }
-                            });
-                            */
-        /*
-                            } else {
-                                //authorization failed\\
-                                TextView responseText = (TextView) findViewById(R.id.txt_response);
+                            else {
+                                //exchange failed\\
                                 responseText.setText(response.toString());
                                 Toast.makeText(context, "Token Response Failed", Toast.LENGTH_SHORT).show();
                                 AuthState state = new AuthState(response, null, ex);
@@ -230,14 +119,35 @@ public class ResponseActivity extends AppCompatActivity {
                         }
                     }
             );
-            //Use access token to make api request
-            AuthState state = readAuthState();
 
-        } else {
+        }
+        else {
+            //authorization failed\\
             Toast.makeText(context, "Authorization response failed", Toast.LENGTH_SHORT).show();
         }
+    }
 
-*/
+    private void initViews(){
+
+        hashTable = new HashTable(HASH_TABLE_SIZE);
+        currentDayMessages = new ArrayList<Message>();
+        currentDayMessageSendersList = new ArrayList<>();
+        responseText = (TextView) findViewById(R.id.txt_response);
+        tokenText = (TextView) findViewById(R.id.txt_token);
+        emailNameInitialRecycler = (RecyclerView) findViewById(R.id.email_name_tile_recycler);
+        emailNameInitialRecycler.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 3);
+        emailNameInitialRecycler.setLayoutManager(layoutManager);
+    }
+
+    public void performTask(String accessToken) {
+
+        googleCredential = new GoogleCredential().setAccessToken(accessToken);
+        progressDialog = new ProgressDialog(ResponseActivity.this);
+        progressDialog.setMessage("Calling Gmail API ...");
+        new MakeMessageRequestTask(googleCredential).execute();
+    }
+
     public AuthState readAuthState() {
 
         SharedPreferences authPrefs = getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
@@ -338,7 +248,27 @@ public class ResponseActivity extends AppCompatActivity {
             if (output.size() == 0) {
                 responseText.setText(getResources().getString(R.string.NoMessagesResponseDisplayText));
             } else {
-                tokenText.setText(TextUtils.join("\n", output));
+                currentDayMessages = output;
+                List<String> senders = new ArrayList<>();
+                int index = 0;
+                for (Message message : output) {
+                    for(int i=0; i<output.get(index).getPayload().getHeaders().size(); i++){
+                        String name = output.get(index).getPayload().getHeaders().get(i).getName();
+                        if(name.equals("From")){
+                            String sender = output.get(index).getPayload().getHeaders().get(i).getValue();
+                            hashTable.insert(sender, message);
+                            break;
+                        }
+                    }
+                    index++;
+                }
+                for(int i = 0; i < HASH_TABLE_SIZE; i++) {
+                    if (hashTable.keys[i] != null) {
+                        currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
+                    }
+                }
+                emailTilesAdapter = new EmailTilesAdapter(ResponseActivity.this, currentDayMessageSendersList);
+                emailNameInitialRecycler.setAdapter(emailTilesAdapter);
             }
         }
 
