@@ -10,17 +10,24 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.HashTable;
+import com.example.android.easymail.views.ExpandableGridView;
 import com.google.api.services.gmail.model.Message;
 
 import com.example.android.easymail.api.MessageApi;
@@ -58,13 +65,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ResponseActivity extends AppCompatActivity {
+public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener{
 
     Context context = this;
     private String accessToken;
     GoogleAccountCredential credential;
     GoogleCredential googleCredential;
     public static final String[] scopes = {GmailScopes.GMAIL_READONLY};
+    private LinearLayout linearLayout;
     private TextView responseText;
     private TextView tokenText;
     private RecyclerView emailNameInitialRecycler;
@@ -74,6 +82,8 @@ public class ResponseActivity extends AppCompatActivity {
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList;
     private static final int HASH_TABLE_SIZE =  100;
     private EmailTilesAdapter emailTilesAdapter;
+    private ExpandableGridView emailNameInitialGridView;
+    private EmailGridViewAdapter emailGridViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +91,7 @@ public class ResponseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_response);
 
         initViews();
+        regListeners();
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
         credential = GoogleAccountCredential.usingOAuth2(
@@ -127,17 +138,40 @@ public class ResponseActivity extends AppCompatActivity {
         }
     }
 
+    private void regListeners() {
+        /*
+        emailNameInitialGridView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            public void onItemClick (AdapterView < ? > parent, View v,
+            int position, long id){
+                emailNameInitialGridView.expandGridViewAtView(v, new EmailGridViewAdapter(ResponseActivity.this, currentDayMessageSendersList));
+            }
+        });
+
+        emailNameInitialGridView.setOnExpandItemClickListener(new ExpandableGridView.OnExpandItemClickListener() {
+            @Override
+            public void onItemClick(int position, Object clickPositionData) {
+                Toast.makeText(getBaseContext(), clickPositionData.toString()+" clicked", Toast.LENGTH_LONG).show();
+            }
+        });
+        */
+    }
+
+
     private void initViews(){
 
         hashTable = new HashTable(HASH_TABLE_SIZE);
         currentDayMessages = new ArrayList<Message>();
         currentDayMessageSendersList = new ArrayList<>();
+        /*
         responseText = (TextView) findViewById(R.id.txt_response);
         tokenText = (TextView) findViewById(R.id.txt_token);
         emailNameInitialRecycler = (RecyclerView) findViewById(R.id.email_name_tile_recycler);
         emailNameInitialRecycler.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 3);
-        emailNameInitialRecycler.setLayoutManager(layoutManager);
+        emailNameInitialGridView = (ExpandableGridView) findViewById(R.id.email_name_tile_grid_view);
+        */
+        linearLayout = (LinearLayout) findViewById(R.id.layout);
+        //RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ResponseActivity.this);
+        //emailNameInitialRecycler.setLayoutManager(layoutManager);
     }
 
     public void performTask(String accessToken) {
@@ -171,6 +205,35 @@ public class ResponseActivity extends AppCompatActivity {
         authPrefs.edit()
                 .putString(context.getResources().getString(R.string.StateJson), state.jsonSerializeString())
                 .apply();
+    }
+
+    @Override
+    public void onSenderNameInitialClick(int row, int column, int isExpanded) {
+
+        ArrayList<Integer> ids = new ArrayList<>();
+        int layoutId = Integer.parseInt("1" + Integer.toString(row));
+        for (int m = 1; m <= 4; m++) {
+            if (m != column)
+                ids.add(Integer.parseInt("2" + Integer.toString(row) + Integer.toString(m)));
+        }
+
+        if (isExpanded == 1) {
+
+            for (int id : ids) {
+
+                RecyclerView recyclerView = (RecyclerView) findViewById(id);
+                if (recyclerView != null)
+                    recyclerView.setVisibility(View.VISIBLE);
+            }
+        } else {
+
+            for (int id : ids) {
+
+                RecyclerView recyclerView = (RecyclerView) findViewById(id);
+                if (recyclerView != null)
+                    recyclerView.setVisibility(View.GONE);
+            }
+        }
     }
 
     private class MakeMessageRequestTask extends AsyncTask<Void, Void, List<Message>> {
@@ -210,13 +273,15 @@ public class ResponseActivity extends AppCompatActivity {
 
             ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
             for (Message message : listMessagesResponse.getMessages())
+                //    currentDayMessages.add(message);
+
                 messagesId.add(message.getId());
 
             for (String messageId : messagesId) {
                 Message message =
                         service.users().messages().get(user, messageId).execute();
 
-                String date = message.getPayload().getHeaders().get(2).getValue().split(",")[1] ;
+                String date = message.getPayload().getHeaders().get(2).getValue().split(",")[1];
                 String[] words = date.split("\\s");
 
                 SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
@@ -228,7 +293,7 @@ public class ResponseActivity extends AppCompatActivity {
                 SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
                 String year = yearFormat.format(Calendar.getInstance().getTime());
 
-                if (words[1].equals(day) && words[2].equals(month) && words[3].equals(year)) {
+                if (words[1].equals("13") && words[2].equals(month) && words[3].equals(year)) {
                     currentDayMessages.add(message);
                 } else
                     break;
@@ -246,7 +311,7 @@ public class ResponseActivity extends AppCompatActivity {
 
             progressDialog.hide();
             if (output.size() == 0) {
-                responseText.setText(getResources().getString(R.string.NoMessagesResponseDisplayText));
+                //responseText.setText(getResources().getString(R.string.NoMessagesResponseDisplayText));
             } else {
                 currentDayMessages = output;
                 List<String> senders = new ArrayList<>();
@@ -264,17 +329,54 @@ public class ResponseActivity extends AppCompatActivity {
                 }
                 for(int i = 0; i < HASH_TABLE_SIZE; i++) {
                     if (hashTable.keys[i] != null) {
+
+                        List<Message> list  = hashTable.vals.get(i);
                         currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
                     }
                 }
+                formMessagesGridView(currentDayMessageSendersList.size());
+                /*
                 emailTilesAdapter = new EmailTilesAdapter(ResponseActivity.this, currentDayMessageSendersList);
                 emailNameInitialRecycler.setAdapter(emailTilesAdapter);
+                emailNameInitialRecycler.setLayoutManager(new LinearLayoutManager(ResponseActivity.this));
+                emailGridViewAdapter = new EmailGridViewAdapter(ResponseActivity.this, currentDayMessageSendersList);
+                emailNameInitialGridView.setAdapter(emailGridViewAdapter);
+                emailNameInitialGridView.setExpanded(true);
+                */
             }
         }
 
         @Override
         protected void onCancelled() {
             progressDialog.hide();
+        }
+    }
+
+    public void formMessagesGridView(int count) {
+
+        int numberOfRows = (int) Math.ceil((float)count / 4);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        for (int i = 0, k = 0; i < numberOfRows; i++) {
+
+            int linearLayoutId = Integer.parseInt("1" + Integer.toString(i+1));
+            LinearLayout l1 = new LinearLayout(this);
+            l1.setLayoutParams(params);
+            l1.setOrientation(LinearLayout.HORIZONTAL);
+            l1.setId(linearLayoutId);
+            for (int j = 0; j < 4 && k < count; j++,k++){
+                List<CurrentDayMessageSendersList> list = new ArrayList<>();
+                list.add(currentDayMessageSendersList.get(k));
+                emailTilesAdapter = new EmailTilesAdapter(this, this, list, i+1, j+1);
+                RecyclerView m1 = new RecyclerView(this);
+                int recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(j + 1));
+                m1.setId(recyclerViewId);
+                m1.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                l1.addView(m1);
+                m1.setAdapter(emailTilesAdapter);
+                m1.setLayoutManager(new LinearLayoutManager(this));
+            }
+            linearLayout.addView(l1);
         }
     }
 }

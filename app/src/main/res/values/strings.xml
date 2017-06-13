@@ -6,4 +6,15 @@
     <string name="RequestGooglePlayServices">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
     <string name="NoMessagesResponseDisplayText">No results returned !</string>
     <string name="GmailApi">Gmail Api</string>
+    <string name="test">TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    </string>
+    <string name="Subject_test">Google OAuth 2.0 Playground connected to your Google Account</string>
+    <string name="to">to</string>
+    <string name="snippet_test">Google OAuth 2.0 Playground connected to your Google Account Hi Harshit, Google OAuth 2.0 Playground now has access to your Google Account harshit.bansalec@gmail.com. Google OAuth 2.0 Playground can:",
+  </string>
+    <string name="read_full_message">Read Full Message</string>
 </resources>

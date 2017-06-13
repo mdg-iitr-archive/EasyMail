@@ -1,5 +1,6 @@
 package com.example.android.easymail.models;
 
+import com.bignerdranch.expandablerecyclerview.model.Parent;
 import com.google.api.services.gmail.model.*;
 import com.google.api.services.gmail.model.Message;
 
@@ -10,14 +11,13 @@ import java.util.List;
  * Created by Harshit Bansal on 6/7/2017.
  */
 
-public class CurrentDayMessageSendersList {
+public class CurrentDayMessageSendersList implements Parent<Message> {
 
     public String sender;
-    public List<Message> senderCurrentDayMessageList;
+    private List<Message> senderCurrentDayMessageList;
 
     public CurrentDayMessageSendersList(String sender, List<Message> senderCurrentDayMessageList){
 
-        senderCurrentDayMessageList = new ArrayList<>();
         this.sender = sender;
         this.senderCurrentDayMessageList = senderCurrentDayMessageList;
     }
@@ -38,5 +38,15 @@ public class CurrentDayMessageSendersList {
 
     public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    @Override
+    public List<Message> getChildList() {
+        return senderCurrentDayMessageList;
+    }
+
+    @Override
+    public boolean isInitiallyExpanded() {
+        return false;
     }
 }
