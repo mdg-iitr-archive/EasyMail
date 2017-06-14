@@ -2,70 +2,34 @@ package com.example.android.easymail;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
+import com.example.android.easymail.interactor.ResponseInteractorImpl;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.HashTable;
+import com.example.android.easymail.presenter.ResponsePresenterImpl;
+import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
 import com.google.api.services.gmail.model.Message;
 
-import com.example.android.easymail.api.MessageApi;
-import com.example.android.easymail.api.NetworkingFactory;
-import com.example.android.easymail.models.MessageHeader;
-import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Base64;
-import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.gmail.model.ListMessagesResponse;
 
-import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
-import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.TokenResponse;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener{
+public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener, ResponseActivityView {
 
     Context context = this;
     private String accessToken;
@@ -80,25 +44,110 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     private HashTable hashTable;
     private List<Message> currentDayMessages;
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList;
-    private static final int HASH_TABLE_SIZE =  100;
+    private static final int HASH_TABLE_SIZE = 100;
     private EmailTilesAdapter emailTilesAdapter;
     private ExpandableGridView emailNameInitialGridView;
     private EmailGridViewAdapter emailGridViewAdapter;
+    ResponsePresenterImpl responsePresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_response);
-
         initViews();
         regListeners();
+        responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
+        String isAutoSignedInToken = getIntent().getExtras().getString("is_auto_signed_in_token");
+        responsePresenter.performTokenRequest(response, isAutoSignedInToken);
+    }
+
+    private void initViews(){
+        linearLayout = (LinearLayout) findViewById(R.id.layout);
+    }
+
+    private void regListeners() {
+    }
+
+    @Override
+    public void onSenderNameInitialClick(int row, int column, int isExpanded) {
+
+        ArrayList<Integer> ids = new ArrayList<>();
+        int layoutId = Integer.parseInt("1" + Integer.toString(row));
+        for (int m = 1; m <= 4; m++) {
+            if (m != column)
+                ids.add(Integer.parseInt("2" + Integer.toString(row) + Integer.toString(m)));
+        }
+        if (isExpanded == 1) {
+            for (int id : ids) {
+                RecyclerView recyclerView = (RecyclerView) findViewById(id);
+                if (recyclerView != null)
+                    recyclerView.setVisibility(View.VISIBLE);
+            }
+        } else {
+            for (int id : ids) {
+                RecyclerView recyclerView = (RecyclerView) findViewById(id);
+                if (recyclerView != null)
+                    recyclerView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void showAutoSignedInDialog() {
+
+        ProgressDialog dialog = new ProgressDialog(ResponseActivity.this);
+        dialog.setMessage("Auto Signing In!");
+        dialog.show();
+    }
+
+    @Override
+    public void showTokenRequestDialog() {
+
+        ProgressDialog dialog = new ProgressDialog(ResponseActivity.this);
+        dialog.setMessage("Making Token Request!");
+        dialog.show();
+    }
+
+    @Override
+    public void showExchangeSucceddedToast() {
+        Toast.makeText(context, "Token Request Completed!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showExchangeFailedToast() {
+        Toast.makeText(context, "Token Request Failed!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showAuthorizationFailedToast() {
+        Toast.makeText(context, "Authorization Request Failed!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, RecyclerView recyclerView) {
+
+        emailTilesAdapter = new EmailTilesAdapter(this, this, list, i + 1, j + 1);
+        recyclerView.setAdapter(emailTilesAdapter);
+    }
+
+    @Override
+    public void addLinearLayoutToDisplay(LinearLayout currentLinearLayout) {
+        linearLayout.addView(currentLinearLayout);
+    }
+
+    @Override
+    public void showZeroMessagesReceivedToast() {
+        Toast.makeText(ResponseActivity.this, "No Messages Received!", Toast.LENGTH_LONG).show();
+    }
+}
+
+       /*
         credential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(scopes)).
                 setBackOff(new ExponentialBackOff());
-        Bundle extras = getIntent().getExtras();
-        String isAutoSignedInToken = extras.getString("is_auto_signed_in_token");
+
         if( isAutoSignedInToken != null ){
             performTask(isAutoSignedInToken);
         }
@@ -136,24 +185,10 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
             //authorization failed\\
             Toast.makeText(context, "Authorization response failed", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     private void regListeners() {
-        /*
-        emailNameInitialGridView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            public void onItemClick (AdapterView < ? > parent, View v,
-            int position, long id){
-                emailNameInitialGridView.expandGridViewAtView(v, new EmailGridViewAdapter(ResponseActivity.this, currentDayMessageSendersList));
-            }
-        });
-
-        emailNameInitialGridView.setOnExpandItemClickListener(new ExpandableGridView.OnExpandItemClickListener() {
-            @Override
-            public void onItemClick(int position, Object clickPositionData) {
-                Toast.makeText(getBaseContext(), clickPositionData.toString()+" clicked", Toast.LENGTH_LONG).show();
-            }
-        });
-        */
     }
 
 
@@ -162,13 +197,13 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         hashTable = new HashTable(HASH_TABLE_SIZE);
         currentDayMessages = new ArrayList<Message>();
         currentDayMessageSendersList = new ArrayList<>();
-        /*
+
         responseText = (TextView) findViewById(R.id.txt_response);
         tokenText = (TextView) findViewById(R.id.txt_token);
         emailNameInitialRecycler = (RecyclerView) findViewById(R.id.email_name_tile_recycler);
         emailNameInitialRecycler.setHasFixedSize(true);
         emailNameInitialGridView = (ExpandableGridView) findViewById(R.id.email_name_tile_grid_view);
-        */
+
         linearLayout = (LinearLayout) findViewById(R.id.layout);
         //RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ResponseActivity.this);
         //emailNameInitialRecycler.setLayoutManager(layoutManager);
@@ -182,58 +217,12 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         new MakeMessageRequestTask(googleCredential).execute();
     }
 
-    public AuthState readAuthState() {
-
-        SharedPreferences authPrefs = getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
-        String stateJson = authPrefs.getString(context.getResources().getString(R.string.StateJson), null);
-
-        if (stateJson != null) {
-            try {
-                return AuthState.jsonDeserialize(stateJson);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } else {
-            return new AuthState();
-        }
-        return null;
-    }
-
     public void writeAuthState(@NonNull AuthState state) {
 
         SharedPreferences authPrefs = getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
         authPrefs.edit()
                 .putString(context.getResources().getString(R.string.StateJson), state.jsonSerializeString())
                 .apply();
-    }
-
-    @Override
-    public void onSenderNameInitialClick(int row, int column, int isExpanded) {
-
-        ArrayList<Integer> ids = new ArrayList<>();
-        int layoutId = Integer.parseInt("1" + Integer.toString(row));
-        for (int m = 1; m <= 4; m++) {
-            if (m != column)
-                ids.add(Integer.parseInt("2" + Integer.toString(row) + Integer.toString(m)));
-        }
-
-        if (isExpanded == 1) {
-
-            for (int id : ids) {
-
-                RecyclerView recyclerView = (RecyclerView) findViewById(id);
-                if (recyclerView != null)
-                    recyclerView.setVisibility(View.VISIBLE);
-            }
-        } else {
-
-            for (int id : ids) {
-
-                RecyclerView recyclerView = (RecyclerView) findViewById(id);
-                if (recyclerView != null)
-                    recyclerView.setVisibility(View.GONE);
-            }
-        }
     }
 
     private class MakeMessageRequestTask extends AsyncTask<Void, Void, List<Message>> {
@@ -335,14 +324,14 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
                     }
                 }
                 formMessagesGridView(currentDayMessageSendersList.size());
-                /*
+
                 emailTilesAdapter = new EmailTilesAdapter(ResponseActivity.this, currentDayMessageSendersList);
                 emailNameInitialRecycler.setAdapter(emailTilesAdapter);
                 emailNameInitialRecycler.setLayoutManager(new LinearLayoutManager(ResponseActivity.this));
                 emailGridViewAdapter = new EmailGridViewAdapter(ResponseActivity.this, currentDayMessageSendersList);
                 emailNameInitialGridView.setAdapter(emailGridViewAdapter);
                 emailNameInitialGridView.setExpanded(true);
-                */
+
             }
         }
 
@@ -379,4 +368,5 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
             linearLayout.addView(l1);
         }
     }
-}
+    */
+
