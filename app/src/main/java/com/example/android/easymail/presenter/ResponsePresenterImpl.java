@@ -72,6 +72,11 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
+    public void onMessagesReceived() {
+        responseActivityView.hideDialog();
+    }
+
+    @Override
     public void writeAuthState(AuthState state) {
         SharedPreferences authPrefs = context.getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
         authPrefs.edit()

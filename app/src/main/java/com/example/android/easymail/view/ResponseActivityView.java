@@ -21,4 +21,5 @@ public interface ResponseActivityView {
     void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, RecyclerView recyclerView);
     void addLinearLayoutToDisplay(LinearLayout currentLinearLayout);
     void showZeroMessagesReceivedToast();
+    void hideDialog();
 }

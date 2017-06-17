@@ -1,5 +1,6 @@
 package com.example.android.easymail.interactor;
 
+import com.example.android.easymail.ResponseActivity;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.HashTable;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -22,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import android.os.Handler;
+
 
 /**
  * Created by Harshit Bansal on 6/14/2017.
@@ -32,9 +35,11 @@ public class ResponseInteractorImpl implements ResponseInteractor{
     public static final String[] scopes = {GmailScopes.GMAIL_READONLY};
     private Exception lastError = null;
     private static final int HASH_TABLE_SIZE =  100;
-    public HashTable hashTable;
-    private List<CurrentDayMessageSendersList> currentDayMessageSendersList;
-
+    public HashTable hashTable = new HashTable(HASH_TABLE_SIZE);
+    private Handler handler = new Handler();
+    private List<CurrentDayMessageSendersList> currentDayMessageSendersList = new ArrayList<>();
+    private int i, j , k , recyclerViewId;
+    List<CurrentDayMessageSendersList> list;
 
     @Override
     public void performMesssageRequestTask(final ResponseInteractor.PresenterCallback callback, String accessToken, final AuthorizationResponse response, AuthorizationService service){
@@ -90,9 +95,10 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
 
-        Runnable r = new Runnable() {
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 String user = "harshit.bansalec@gmail.com";
                 List<String> messagesId = new ArrayList<String>();
                 ArrayList<Message> currentDayMessages = new ArrayList<>();
@@ -134,7 +140,12 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 }
 
                 if (currentDayMessages.size() == 0) {
-                    callback.onZeroMessagesReceived();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onZeroMessagesReceived();
+                        }
+                    });
                 } else {
                     List<String> senders = new ArrayList<>();
                     int index = 0;
@@ -159,24 +170,41 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                     formMessagesGridView(callback, currentDayMessageSendersList.size());
                 }
             }
-        };
-        new Thread(r).start();
+        });
+        thread.start();
     }
 
     public void formMessagesGridView(final ResponseInteractor.PresenterCallback callback, int count) {
 
         int numberOfRows = (int) Math.ceil((float)count / 4);
-        for (int i = 0, k = 0; i < numberOfRows; i++) {
+        for (i = 0, k = 0; i < numberOfRows; i++) {
 
             int linearLayoutId = Integer.parseInt("1" + Integer.toString(i+1));
             callback.formLinearLayout(linearLayoutId);
-            for (int j = 0; j < 4 && k < count; j++,k++){
-                List<CurrentDayMessageSendersList> list = new ArrayList<>();
+            for (j = 0; j < 4 && k < count; j++,k++){
+                list = new ArrayList<>();
                 list.add(currentDayMessageSendersList.get(k));
-                int recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(j + 1));
-                callback.formRecyclerView(list, i, j, recyclerViewId);
+                recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(j + 1));
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.formRecyclerView(list, i, j, recyclerViewId);
+                    }
+                });
+
             }
-            callback.addLinearLayout();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.addLinearLayout();
+                }
+            });
         }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onMessagesReceived();
+            }
+        });
     }
 }

@@ -28,6 +28,7 @@ public interface ResponseInteractor {
         void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, int recyclerViewId);
         void addLinearLayout();
         void onZeroMessagesReceived();
+        void onMessagesReceived();
     }
 
     void performMesssageRequestTask(PresenterCallback callback, String accessToken, AuthorizationResponse response, AuthorizationService service);

@@ -32,23 +32,13 @@ import java.util.List;
 public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener, ResponseActivityView {
 
     Context context = this;
-    private String accessToken;
-    GoogleAccountCredential credential;
-    GoogleCredential googleCredential;
-    public static final String[] scopes = {GmailScopes.GMAIL_READONLY};
     private LinearLayout linearLayout;
-    private TextView responseText;
-    private TextView tokenText;
     private RecyclerView emailNameInitialRecycler;
-    private ProgressDialog progressDialog;
-    private HashTable hashTable;
-    private List<Message> currentDayMessages;
-    private List<CurrentDayMessageSendersList> currentDayMessageSendersList;
-    private static final int HASH_TABLE_SIZE = 100;
     private EmailTilesAdapter emailTilesAdapter;
     private ExpandableGridView emailNameInitialGridView;
     private EmailGridViewAdapter emailGridViewAdapter;
-    ResponsePresenterImpl responsePresenter;
+    private ResponsePresenterImpl responsePresenter;
+    private ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +87,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     @Override
     public void showAutoSignedInDialog() {
 
-        ProgressDialog dialog = new ProgressDialog(ResponseActivity.this);
+        dialog = new ProgressDialog(ResponseActivity.this);
         dialog.setMessage("Auto Signing In!");
         dialog.show();
     }
@@ -105,7 +95,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     @Override
     public void showTokenRequestDialog() {
 
-        ProgressDialog dialog = new ProgressDialog(ResponseActivity.this);
+        dialog = new ProgressDialog(ResponseActivity.this);
         dialog.setMessage("Making Token Request!");
         dialog.show();
     }
@@ -140,6 +130,11 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     @Override
     public void showZeroMessagesReceivedToast() {
         Toast.makeText(ResponseActivity.this, "No Messages Received!", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void hideDialog() {
+        dialog.hide();
     }
 }
 
