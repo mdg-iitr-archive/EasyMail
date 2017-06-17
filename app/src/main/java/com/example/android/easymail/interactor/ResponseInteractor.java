@@ -1,6 +1,7 @@
 package com.example.android.easymail.interactor;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 
@@ -30,7 +31,7 @@ public interface ResponseInteractor {
         void onZeroMessagesReceived();
         void onMessagesReceived();
     }
-
+    void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context);
     void performMesssageRequestTask(PresenterCallback callback, String accessToken, AuthorizationResponse response, AuthorizationService service);
     String[] getScopes();
 }

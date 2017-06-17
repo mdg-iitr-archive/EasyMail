@@ -29,6 +29,10 @@ import net.openid.appauth.AuthorizationResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+
 public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener, ResponseActivityView {
 
     Context context = this;
@@ -39,6 +43,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     private EmailGridViewAdapter emailGridViewAdapter;
     private ResponsePresenterImpl responsePresenter;
     private ProgressDialog dialog;
+    List<CurrentDayMessageSendersList> list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,8 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
         String isAutoSignedInToken = getIntent().getExtras().getString("is_auto_signed_in_token");
+
+        responsePresenter.getOfflineMessages();
         responsePresenter.performTokenRequest(response, isAutoSignedInToken);
     }
 
@@ -134,7 +141,8 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
 
     @Override
     public void hideDialog() {
-        dialog.hide();
+        if (dialog.isShowing())
+            dialog.hide();
     }
 }
 

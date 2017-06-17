@@ -61,6 +61,12 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
+    public void getOfflineMessages() {
+        responseInteractor.getRealmSavedMessages(this, context);
+
+    }
+
+    @Override
     public void performTokenRequest(AuthorizationResponse response, String isAutoSignedInToken) {
 
         String[] scopes = responseInteractor.getScopes();
@@ -112,6 +118,7 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     @Override
     public void onZeroMessagesReceived() {
         responseActivityView.showZeroMessagesReceivedToast();
+        responseActivityView.hideDialog();
     }
 
     @Override
@@ -127,6 +134,7 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     @Override
     public void onAuthorizationFailed() {
         responseActivityView.showAuthorizationFailedToast();
+        responseActivityView.hideDialog();
     }
 
     @Override
@@ -137,5 +145,6 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     @Override
     public void onExchangeFailed() {
         responseActivityView.showExchangeFailedToast();
+        responseActivityView.hideDialog();
     }
 }

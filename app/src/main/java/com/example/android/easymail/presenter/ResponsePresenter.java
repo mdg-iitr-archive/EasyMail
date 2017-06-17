@@ -14,5 +14,6 @@ public interface ResponsePresenter {
     void onPause();
     void onResume();
     void onDestroy();
+    void getOfflineMessages();
     void performTokenRequest(AuthorizationResponse response, String isAutoSignedInToken);
 }

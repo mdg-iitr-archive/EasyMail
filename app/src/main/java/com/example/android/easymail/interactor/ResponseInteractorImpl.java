@@ -23,7 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import android.content.Context;
 import android.os.Handler;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 
 /**
@@ -40,6 +46,19 @@ public class ResponseInteractorImpl implements ResponseInteractor{
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList = new ArrayList<>();
     private int i, j , k , recyclerViewId;
     List<CurrentDayMessageSendersList> list;
+    Realm realm;
+
+    @Override
+    public void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context) {
+
+        Realm.init(context);
+        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
+        realm = Realm.getInstance(configuration);
+
+        RealmResults<CurrentDayMessageSendersList> results = realm.where(CurrentDayMessageSendersList.class).findAll();
+        currentDayMessageSendersList =  realm.copyFromRealm(results);
+        formMessagesGridView(callback, currentDayMessageSendersList.size());
+    }
 
     @Override
     public void performMesssageRequestTask(final ResponseInteractor.PresenterCallback callback, String accessToken, final AuthorizationResponse response, AuthorizationService service){
@@ -47,7 +66,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         GoogleCredential googleCredential = new GoogleCredential().setAccessToken(accessToken);
         if (accessToken != null){
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-            callback.autoSignedInTokenReceived();
+            //callback.autoSignedInTokenReceived();
             startBackgroundTask(callback, credential);
         }
         if (response != null){
@@ -59,7 +78,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                             if (resp != null) {
                                 //exchange succeeded\\
                                 callback.onExchangeSuccedded();
-                                callback.onMakeTokenRequest();
+                                //callback.onMakeTokenRequest();
                                 String accessToken = resp.accessToken;
                                 AuthState state = new AuthState(response, resp, ex);
                                 callback.writeAuthState(state);
@@ -99,7 +118,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
             @Override
             public void run() {
 
-                String user = "harshit.bansalec@gmail.com";
+                String user = "me";
                 List<String> messagesId = new ArrayList<String>();
                 ArrayList<Message> currentDayMessages = new ArrayList<>();
 
@@ -167,6 +186,9 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                             currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
                         }
                     }
+                    realm.beginTransaction();
+                    realm.copyToRealmOrUpdate(currentDayMessageSendersList);
+                    realm.commitTransaction();
                     formMessagesGridView(callback, currentDayMessageSendersList.size());
                 }
             }

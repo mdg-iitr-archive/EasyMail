@@ -7,12 +7,16 @@ import com.google.api.services.gmail.model.Message;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by Harshit Bansal on 6/7/2017.
  */
 
-public class CurrentDayMessageSendersList implements Parent<Message> {
+public class CurrentDayMessageSendersList extends RealmObject implements Parent<Message> {
 
+    @PrimaryKey
     public String sender;
     private List<Message> senderCurrentDayMessageList;
 
