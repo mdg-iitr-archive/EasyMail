@@ -84,6 +84,12 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
+    public void onRealmMessagesListFormed(int count) {
+
+        responseInteractor.formMessagesGridView(this, count);
+    }
+
+    @Override
     public void writeAuthState(AuthState state) {
         SharedPreferences authPrefs = context.getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
         authPrefs.edit()
@@ -102,7 +108,7 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
-    public void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, int recyclerViewId) {
+    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, int recyclerViewId) {
         RecyclerView m1 = new RecyclerView(context);
         m1.setId(recyclerViewId);
         m1.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));

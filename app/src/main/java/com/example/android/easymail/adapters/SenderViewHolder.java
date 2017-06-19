@@ -35,7 +35,7 @@ public class SenderViewHolder extends ParentViewHolder {
         });
     }
 
-    public void bind(CurrentDayMessageSendersList currentDayMessageSendersList){
+    public void bind(CurrentDayMessageSendersRealmList currentDayMessageSendersList){
         String senderNameInitial = currentDayMessageSendersList.getSender().substring(0, 1).toUpperCase();
         String senderEmailCount = Integer.toString( currentDayMessageSendersList.getSenderCurrentDayMessageList().size() );
         emailSenderInitial.setText(senderNameInitial);

@@ -1,6 +1,10 @@
 package com.example.android.easymail.models;
 
 import com.bignerdranch.expandablerecyclerview.model.Parent;
+import com.google.api.services.gmail.model.*;
+import com.google.api.services.gmail.model.Message;
+
+import java.util.List;
 import java.util.List;
 
 import io.realm.RealmObject;
@@ -12,7 +16,6 @@ import io.realm.annotations.PrimaryKey;
 
 public class CurrentDayMessageSendersList implements Parent<Message>{
 
-    @PrimaryKey
     public String sender;
     private List<Message> senderCurrentDayMessageList;
 
@@ -20,10 +23,6 @@ public class CurrentDayMessageSendersList implements Parent<Message>{
 
         this.sender = sender;
         this.senderCurrentDayMessageList = senderCurrentDayMessageList;
-    }
-
-    public CurrentDayMessageSendersList(){
-
     }
 
     public List<Message> getSenderCurrentDayMessageList() {
@@ -46,7 +45,7 @@ public class CurrentDayMessageSendersList implements Parent<Message>{
 
     @Override
     public List<Message> getChildList() {
-        return null;
+        return senderCurrentDayMessageList;
     }
 
     @Override

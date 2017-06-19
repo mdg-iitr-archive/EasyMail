@@ -28,16 +28,17 @@ import io.realm.RealmList;
  * Created by Harshit Bansal on 6/7/2017.
  */
 
-public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessageSendersList, Message, SenderViewHolder, MessageViewHolder> {
+public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessageSendersRealmList, Message,
+        SenderViewHolder, MessageViewHolder> {
 
-    private List<CurrentDayMessageSendersList> currentDayMessagesList;
+    private List<CurrentDayMessageSendersRealmList> currentDayMessagesList;
     private Context context;
     private int size;
     private int row, column;
     private SenderNameInitialClickListener senderNameInitialClickListener;
 
     public EmailTilesAdapter(SenderNameInitialClickListener senderNameInitialClickListener,
-                             Context context, @NonNull List<CurrentDayMessageSendersList> currentDayMessagesList,
+                             Context context, @NonNull List<CurrentDayMessageSendersRealmList> currentDayMessagesList,
                              int row, int column) {
         super(currentDayMessagesList);
         this.context = context;
@@ -71,7 +72,7 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     }
 
     @Override
-    public void onBindParentViewHolder(@NonNull SenderViewHolder holder, int position, @NonNull CurrentDayMessageSendersList parent) {
+    public void onBindParentViewHolder(@NonNull SenderViewHolder holder, int position, @NonNull CurrentDayMessageSendersRealmList parent) {
         /*
         String senderNameInitial = currentDayMessagesList.get(position).getSender().substring(0,1).toUpperCase();
         String senderEmailCount = Integer.toString( currentDayMessagesList.get(position).getSenderCurrentDayMessageList().size() );

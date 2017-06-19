@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import android.app.Notification;
@@ -53,15 +54,18 @@ public class ResponseInteractorImpl implements ResponseInteractor{
     private Exception lastError = null;
     private static final int HASH_TABLE_SIZE =  100;
     public HashTable hashTable = new HashTable(HASH_TABLE_SIZE);
-    private Handler handler = new Handler();
+    private Handler handler = new Handler();;
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList = new ArrayList<>();
     private List<CurrentDayMessageSendersRealmList> currentDayMessageSendersRealmList = new ArrayList<>();
     private int i, j , k , recyclerViewId;
-    List<CurrentDayMessageSendersList> list;
+    private List<CurrentDayMessageSendersRealmList> list;
     Realm realm;
+    Context context;
 
     @Override
     public void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context) {
+
+        this.context = context;
 
         Realm.init(context);
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
@@ -69,12 +73,23 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
         RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
         currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
-        for (CurrentDayMessageSendersRealmList list : currentDayMessageSendersRealmList) {
+        /*
+        for (int i = 0; i < currentDayMessageSendersRealmList.size(); i++) {
+
             String sender = list.getSender();
-            List<Message> messageList = list.getSenderCurrentDayMessageList();
-            currentDayMessageSendersList.add(new CurrentDayMessageSendersList(sender, messageList));
+            RealmList<Message> messageList = list.getSenderCurrentDayMessageList();
+            currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(sender, messageList));
         }
-        formMessagesGridView(callback, currentDayMessageSendersList.size());
+
+        for (Iterator<CurrentDayMessageSendersRealmList> iterator = currentDayMessageSendersRealmList.iterator(); iterator.hasNext();){
+            CurrentDayMessageSendersRealmList obj = iterator.next();
+            String sender = obj.getSender();
+            RealmList<Message> messageList = obj.getSenderCurrentDayMessageList();
+            currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(sender, messageList));
+        }
+
+        */
+        formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
     }
 
     @Override
@@ -84,7 +99,11 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         if (accessToken != null){
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
             //callback.autoSignedInTokenReceived();
-            startBackgroundTask(callback, credential);
+            try {
+                startBackgroundTask(callback, credential);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         if (response != null){
             service.performTokenRequest(
@@ -100,7 +119,11 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                                 AuthState state = new AuthState(response, resp, ex);
                                 callback.writeAuthState(state);
                                 GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-                                startBackgroundTask(callback, credential);
+                                try {
+                                    startBackgroundTask(callback, credential);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             else {
                                 //exchange failed\\
@@ -123,7 +146,8 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         return scopes;
     }
 
-    private void startBackgroundTask(final ResponseInteractor.PresenterCallback callback, GoogleCredential credential) {
+    private void startBackgroundTask(final ResponseInteractor.PresenterCallback callback, GoogleCredential credential)
+            throws InterruptedException{
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -177,6 +201,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 }
 
                 if (currentDayMessages.size() == 0) {
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -184,7 +209,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                         }
                     });
                 } else {
-                    List<String> senders = new ArrayList<>();
+                     List<String> senders = new ArrayList<>();
                     int index = 0;
                     for (com.google.api.services.gmail.model.Message message : currentDayMessages) {
                         for (int i = 0; i < currentDayMessages.get(index).getPayload().getHeaders().size(); i++) {
@@ -199,6 +224,8 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                     }
                     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
                         if (hashTable.keys[i] != null) {
+
+                            currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
 
                             List<com.google.api.services.gmail.model.Message> list = hashTable.vals.get(i);
                             RealmList<Message> modifiedList = new RealmList<>();
@@ -247,6 +274,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                                 modifiedList.add(modifiedMessage);
                             }
                             currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(hashTable.keys[i], modifiedList));
+
                             /*
                             CurrentDayMessageSendersRealmList a = new CurrentDayMessageSendersRealmList();
                             a.setSender(hashTable.keys[i]);
@@ -256,49 +284,50 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
                         }
                     }
+                    /*
                     RealmConfiguration configuration = new RealmConfiguration.Builder().build();
                     realm = Realm.getInstance(configuration);
                     realm.beginTransaction();
                     realm.copyToRealmOrUpdate(currentDayMessageSendersRealmList);
                     realm.commitTransaction();
-                    formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
+                    */
+/*
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            //callback.onRealmMessagesListFormed(currentDayMessageSendersList.size());
+                        }
+                    });
+                    */
+
                 }
             }
         });
         thread.start();
+        thread.join();
+        realm.beginTransaction();
+        realm.copyToRealmOrUpdate(currentDayMessageSendersRealmList);
+        realm.commitTransaction();
+        formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
     }
 
-    public void formMessagesGridView(final ResponseInteractor.PresenterCallback callback, int count) {
+    @Override
+    public void formMessagesGridView(final ResponseInteractor.PresenterCallback callback, final int count) {
 
-        int numberOfRows = (int) Math.ceil((float)count / 4);
-        for (i = 0, k = 0; i < numberOfRows; i++) {
+        int numberOfRows = (int) Math.ceil((float) count / 4);
+                for (i = 0, k = 0; i < numberOfRows; i++) {
 
-            int linearLayoutId = Integer.parseInt("1" + Integer.toString(i+1));
-            callback.formLinearLayout(linearLayoutId);
-            for (j = 0; j < 4 && k < count; j++,k++){
-                list = new ArrayList<>();
-                list.add(currentDayMessageSendersList.get(k));
-                recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(j + 1));
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
+                    int linearLayoutId = Integer.parseInt("1" + Integer.toString(i + 1));
+                    callback.formLinearLayout(linearLayoutId);
+                    for (j = 0; j < 4 && k < count; j++, k++) {
+                        list = new ArrayList<>();
+                        list.add(currentDayMessageSendersRealmList.get(k));
+                        recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(j + 1));
                         callback.formRecyclerView(list, i, j, recyclerViewId);
                     }
-                });
-
-            }
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
                     callback.addLinearLayout();
                 }
-            });
-        }
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
                 callback.onMessagesReceived();
-            }
-        });
+
     }
 }

@@ -48,7 +48,7 @@ public class CurrentDayMessageSendersRealmList extends RealmObject implements Pa
 
     @Override
     public List<Message> getChildList() {
-        return null;
+        return senderCurrentDayMessageList;
     }
 
     @Override

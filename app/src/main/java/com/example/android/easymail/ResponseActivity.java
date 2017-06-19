@@ -58,7 +58,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         String isAutoSignedInToken = getIntent().getExtras().getString("is_auto_signed_in_token");
 
         responsePresenter.getOfflineMessages();
-        // responsePresenter.performTokenRequest(response, isAutoSignedInToken);
+         responsePresenter.performTokenRequest(response, isAutoSignedInToken);
     }
 
     private void initViews(){
@@ -124,7 +124,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     }
 
     @Override
-    public void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, RecyclerView recyclerView) {
+    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, RecyclerView recyclerView) {
 
         emailTilesAdapter = new EmailTilesAdapter(this, this, list, i + 1, j + 1);
         recyclerView.setAdapter(emailTilesAdapter);

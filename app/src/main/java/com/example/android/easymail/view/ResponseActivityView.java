@@ -19,7 +19,7 @@ public interface ResponseActivityView {
     void showExchangeSucceddedToast();
     void showExchangeFailedToast();
     void showAuthorizationFailedToast();
-    void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, RecyclerView recyclerView);
+    void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, RecyclerView recyclerView);
     void addLinearLayoutToDisplay(LinearLayout currentLinearLayout);
     void showZeroMessagesReceivedToast();
     void hideDialog();

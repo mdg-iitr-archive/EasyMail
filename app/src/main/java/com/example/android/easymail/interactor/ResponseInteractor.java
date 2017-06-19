@@ -27,12 +27,14 @@ public interface ResponseInteractor {
         void onExchangeFailed();
         void writeAuthState(AuthState state);
         void formLinearLayout(int linearLayoutId);
-        void formRecyclerView(List<CurrentDayMessageSendersList> list, int i, int j, int recyclerViewId);
+        void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, int recyclerViewId);
         void addLinearLayout();
         void onZeroMessagesReceived();
         void onMessagesReceived();
+        void onRealmMessagesListFormed(int count);
     }
     void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context);
     void performMesssageRequestTask(PresenterCallback callback, String accessToken, AuthorizationResponse response, AuthorizationService service);
     String[] getScopes();
+    void formMessagesGridView(final ResponseInteractor.PresenterCallback callback, final int count);
 }
