@@ -4,24 +4,26 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+
 /**
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class MessagePart {
+public class MessagePart extends RealmObject {
 
-    @SerializedName("mimeType")
-    public String mimeType;
-    @SerializedName("headers")
-    public ArrayList<MessageHeader> headers;
-    @SerializedName("body")
-    public MessageBody body;
-    @SerializedName("partId")
-    public String partId;
-    @SerializedName("fileName")
-    public String fileName;
+    private String mimeType;
+    private RealmList<MessageHeader> headers;
+    private MessageBody body;
+    private String partId;
+    private String fileName;
 
-    public MessagePart(String mimeType, ArrayList<MessageHeader> headers, MessageBody body, String partId, String fileName) {
+    public MessagePart() {
+    }
+
+    public MessagePart(String mimeType, RealmList<MessageHeader> headers, MessageBody body, String partId, String fileName) {
         this.mimeType = mimeType;
         this.headers = headers;
         this.body = body;
@@ -46,12 +48,12 @@ public class MessagePart {
         this.mimeType = mimeType;
     }
 
-    public ArrayList<MessageHeader> getHeaders() {
+    public RealmList<MessageHeader> getHeaders() {
 
         return headers;
     }
 
-    public void setHeaders(ArrayList<MessageHeader> headers) {
+    public void setHeaders(RealmList<MessageHeader> headers) {
         this.headers = headers;
     }
 

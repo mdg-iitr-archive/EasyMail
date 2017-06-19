@@ -15,10 +15,14 @@ import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
 import com.example.android.easymail.R;
 import com.example.android.easymail.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.HashTable;
-import com.google.api.services.gmail.model.Message;
+import com.example.android.easymail.models.Message;
+
 
 import java.util.List;
+
+import io.realm.RealmList;
 
 /**
  * Created by Harshit Bansal on 6/7/2017.
@@ -42,14 +46,16 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
         this.row = row;
         this.column = column;
     }
-/*
-    @Override
-    public EmailTilesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
-        return new ViewHolder(view);
-    }
-*/
+
+    /*
+        @Override
+        public EmailTilesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
+            return new ViewHolder(view);
+        }
+    */
     @NonNull
     @Override
     public SenderViewHolder onCreateParentViewHolder(@NonNull ViewGroup parent, int viewType) {

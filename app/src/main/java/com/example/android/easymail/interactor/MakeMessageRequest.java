@@ -120,7 +120,7 @@ public class MakeMessageRequest extends AsyncTask<Void, Void, List<Message>> {
                 if (hashTable.keys[i] != null) {
 
                     List<Message> list = hashTable.vals.get(i);
-                    currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
+                    // currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
                 }
             }
         }

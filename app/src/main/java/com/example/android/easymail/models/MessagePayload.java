@@ -4,24 +4,25 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
+import io.realm.RealmList;
+import io.realm.RealmObject;
+
 /**
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class MessagePayload {
+public class MessagePayload extends RealmObject {
 
-    @SerializedName("mimeType")
-    public String mimeType;
-    @SerializedName("headers")
-    public ArrayList<MessageHeader> headers;
-    @SerializedName("parts")
-    public ArrayList<MessagePart> parts;
-    @SerializedName("body")
-    public MessageBody body;
-    @SerializedName("fileName")
-    public String fileName;
+    private String mimeType;
+    private RealmList<MessageHeader> headers;
+    private RealmList<MessagePart> parts;
+    private MessagePartBody body;
+    private String fileName;
 
-    public MessagePayload(String mimeType, ArrayList<MessageHeader> headers, ArrayList<MessagePart> parts, MessageBody body,String fileName) {
+    public MessagePayload() {
+    }
+
+    public MessagePayload(String mimeType, RealmList<MessageHeader> headers, RealmList<MessagePart> parts, MessagePartBody body, String fileName) {
         this.mimeType = mimeType;
         this.headers = headers;
         this.parts = parts;
@@ -29,11 +30,11 @@ public class MessagePayload {
         this.fileName = fileName;
     }
 
-    public ArrayList<MessagePart> getParts() {
+    public RealmList<MessagePart> getParts() {
         return parts;
     }
 
-    public void setParts(ArrayList<MessagePart> parts) {
+    public void setParts(RealmList<MessagePart> parts) {
         this.parts = parts;
     }
 
@@ -46,12 +47,12 @@ public class MessagePayload {
         this.mimeType = mimeType;
     }
 
-    public ArrayList<MessageHeader> getHeaders() {
+    public RealmList<MessageHeader> getHeaders() {
 
         return headers;
     }
 
-    public void setHeaders(ArrayList<MessageHeader> headers) {
+    public void setHeaders(RealmList<MessageHeader> headers) {
         this.headers = headers;
     }
 
@@ -64,12 +65,12 @@ public class MessagePayload {
         this.fileName = fileName;
     }
 
-    public MessageBody getBody() {
+    public MessagePartBody getBody() {
 
         return body;
     }
 
-    public void setBody(MessageBody body) {
+    public void setBody(MessagePartBody body) {
         this.body = body;
     }
 }

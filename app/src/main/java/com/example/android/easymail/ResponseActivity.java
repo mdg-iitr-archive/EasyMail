@@ -14,6 +14,7 @@ import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.interactor.ResponseInteractorImpl;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.HashTable;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.view.ResponseActivityView;
@@ -57,7 +58,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         String isAutoSignedInToken = getIntent().getExtras().getString("is_auto_signed_in_token");
 
         responsePresenter.getOfflineMessages();
-        responsePresenter.performTokenRequest(response, isAutoSignedInToken);
+        // responsePresenter.performTokenRequest(response, isAutoSignedInToken);
     }
 
     private void initViews(){
@@ -141,6 +142,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
 
     @Override
     public void hideDialog() {
+        dialog = new ProgressDialog(ResponseActivity.this);
         if (dialog.isShowing())
             dialog.hide();
     }

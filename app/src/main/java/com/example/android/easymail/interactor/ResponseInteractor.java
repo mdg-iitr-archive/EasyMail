@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationResponse;

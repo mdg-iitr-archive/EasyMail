@@ -13,6 +13,7 @@ import android.widget.ListView;
 import com.example.android.easymail.R;
 import com.example.android.easymail.interactor.ResponseInteractor;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;

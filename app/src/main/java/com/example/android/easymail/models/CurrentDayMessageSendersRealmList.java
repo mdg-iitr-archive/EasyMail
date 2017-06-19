@@ -1,8 +1,10 @@
 package com.example.android.easymail.models;
 
 import com.bignerdranch.expandablerecyclerview.model.Parent;
+
 import java.util.List;
 
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -10,28 +12,28 @@ import io.realm.annotations.PrimaryKey;
  * Created by Harshit Bansal on 6/7/2017.
  */
 
-public class CurrentDayMessageSendersList implements Parent<Message>{
+public class CurrentDayMessageSendersRealmList extends RealmObject implements Parent<Message>{
 
     @PrimaryKey
-    public String sender;
-    private List<Message> senderCurrentDayMessageList;
+    private String sender;
+    private RealmList<Message> senderCurrentDayMessageList;
 
-    public CurrentDayMessageSendersList(String sender, List<Message> senderCurrentDayMessageList){
+    public CurrentDayMessageSendersRealmList(String sender, RealmList<Message> senderCurrentDayMessageList){
 
         this.sender = sender;
         this.senderCurrentDayMessageList = senderCurrentDayMessageList;
     }
 
-    public CurrentDayMessageSendersList(){
+    public CurrentDayMessageSendersRealmList(){
 
     }
 
-    public List<Message> getSenderCurrentDayMessageList() {
+    public RealmList<Message> getSenderCurrentDayMessageList() {
 
         return senderCurrentDayMessageList;
     }
 
-    public void setSenderCurrentDayMessageList(List<Message> senderCurrentDayMessageList) {
+    public void setSenderCurrentDayMessageList(RealmList<Message> senderCurrentDayMessageList) {
         this.senderCurrentDayMessageList = senderCurrentDayMessageList;
     }
 

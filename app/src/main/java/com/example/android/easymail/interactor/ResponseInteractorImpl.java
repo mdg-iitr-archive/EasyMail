@@ -2,7 +2,14 @@ package com.example.android.easymail.interactor;
 
 import com.example.android.easymail.ResponseActivity;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.HashTable;
+import com.example.android.easymail.models.Message;
+import com.example.android.easymail.models.MessageBody;
+import com.example.android.easymail.models.MessageHeader;
+import com.example.android.easymail.models.MessagePart;
+import com.example.android.easymail.models.MessagePayload;
+import com.example.android.easymail.models.RealmString;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
@@ -10,7 +17,9 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePartBody;
+import com.google.api.services.gmail.model.MessagePartHeader;
+
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -24,11 +33,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import android.app.Notification;
 import android.content.Context;
 import android.os.Handler;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 
@@ -44,6 +55,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
     public HashTable hashTable = new HashTable(HASH_TABLE_SIZE);
     private Handler handler = new Handler();
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList = new ArrayList<>();
+    private List<CurrentDayMessageSendersRealmList> currentDayMessageSendersRealmList = new ArrayList<>();
     private int i, j , k , recyclerViewId;
     List<CurrentDayMessageSendersList> list;
     Realm realm;
@@ -55,8 +67,13 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
 
-        RealmResults<CurrentDayMessageSendersList> results = realm.where(CurrentDayMessageSendersList.class).findAll();
-        currentDayMessageSendersList =  realm.copyFromRealm(results);
+        RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
+        currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
+        for (CurrentDayMessageSendersRealmList list : currentDayMessageSendersRealmList) {
+            String sender = list.getSender();
+            List<Message> messageList = list.getSenderCurrentDayMessageList();
+            currentDayMessageSendersList.add(new CurrentDayMessageSendersList(sender, messageList));
+        }
         formMessagesGridView(callback, currentDayMessageSendersList.size());
     }
 
@@ -118,9 +135,9 @@ public class ResponseInteractorImpl implements ResponseInteractor{
             @Override
             public void run() {
 
-                String user = "me";
+                String user = "harshit.bansalec@gmail.com";
                 List<String> messagesId = new ArrayList<String>();
-                ArrayList<Message> currentDayMessages = new ArrayList<>();
+                ArrayList<com.google.api.services.gmail.model.Message> currentDayMessages = new ArrayList<>();
 
                 ListMessagesResponse listMessagesResponse = null;
                 try {
@@ -128,11 +145,11 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                for (Message message : listMessagesResponse.getMessages())
+                for (com.google.api.services.gmail.model.Message message : listMessagesResponse.getMessages())
                     messagesId.add(message.getId());
 
                 for (String messageId : messagesId) {
-                    Message message = null;
+                    com.google.api.services.gmail.model.Message message = null;
                     try {
                         message = service.users().messages().get(user, messageId).execute();
                     } catch (IOException e) {
@@ -153,7 +170,8 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
                     if (words[1].equals(day) && words[2].equals(month) && words[3].equals(year)) {
                         currentDayMessages.add(message);
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
@@ -168,7 +186,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 } else {
                     List<String> senders = new ArrayList<>();
                     int index = 0;
-                    for (Message message : currentDayMessages) {
+                    for (com.google.api.services.gmail.model.Message message : currentDayMessages) {
                         for (int i = 0; i < currentDayMessages.get(index).getPayload().getHeaders().size(); i++) {
                             String name = currentDayMessages.get(index).getPayload().getHeaders().get(i).getName();
                             if (name.equals("From")) {
@@ -182,14 +200,68 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
                         if (hashTable.keys[i] != null) {
 
-                            List<Message> list = hashTable.vals.get(i);
-                            currentDayMessageSendersList.add(new CurrentDayMessageSendersList(hashTable.keys[i], hashTable.vals.get(i)));
+                            List<com.google.api.services.gmail.model.Message> list = hashTable.vals.get(i);
+                            RealmList<Message> modifiedList = new RealmList<>();
+                            for  (com.google.api.services.gmail.model.Message message : list) {
+                                Message modifiedMessage = new Message();
+                                modifiedMessage.setId(message.getId());
+                                modifiedMessage.setThreadId(message.getThreadId());
+                                RealmList<RealmString> stringList = new RealmList<>();
+                                for (String labelId : message.getLabelIds()){
+                                    stringList.add(new RealmString(labelId));
+                                }
+                                modifiedMessage.setLabelIds(stringList);
+                                // modifiedMessage.setLabelIds(new RealmList<RealmString>((RealmString[]) message.getLabelIds().toArray()));
+                                modifiedMessage.setSnippet(message.getSnippet());
+
+                                String mimeType = message.getPayload().getMimeType();
+                                RealmList<MessageHeader> headers = new RealmList<>();
+                                for (MessagePartHeader header : message.getPayload().getHeaders()) {
+                                    headers.add(new MessageHeader(header.getName(), header.getValue()));
+                                }
+                                RealmList<MessagePart> parts = new RealmList<>();
+                                if (message.getPayload().getParts() != null){
+                                for (com.google.api.services.gmail.model.MessagePart part : message.getPayload().getParts()) {
+                                    String partMimeType = part.getMimeType();
+                                    MessageBody body = new MessageBody(part.getBody().getData(),
+                                            part.getBody().getSize());
+                                    RealmList<MessageHeader> partHeader = new RealmList<>();
+                                    for (MessagePartHeader header : part.getHeaders()) {
+                                        partHeader.add(new MessageHeader(header.getName(), header.getValue()));
+                                    }
+                                    String partId = part.getPartId();
+                                    String filename = part.getFilename();
+                                    parts.add(new MessagePart(partMimeType, partHeader,
+                                            body, partId, filename));
+                                }
+                                }
+                                String file = message.getPayload().getFilename();
+                                com.example.android.easymail.models.MessagePartBody partBody =
+                                        new com.example.android.easymail.models.MessagePartBody(message.getPayload().getBody().getSize());
+
+                                MessagePayload payload = new MessagePayload(mimeType,
+                                        headers,
+                                        parts,
+                                        partBody, file);
+                                modifiedMessage.setPayload(payload);
+                                modifiedList.add(modifiedMessage);
+                            }
+                            currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(hashTable.keys[i], modifiedList));
+                            /*
+                            CurrentDayMessageSendersRealmList a = new CurrentDayMessageSendersRealmList();
+                            a.setSender(hashTable.keys[i]);
+                            a.setSenderCurrentDayMessageList(new RealmList<Message>((Message[]) modifiedList.toArray()));
+                            currentDayMessageSendersRealmList.add(a);
+                            */
+
                         }
                     }
+                    RealmConfiguration configuration = new RealmConfiguration.Builder().build();
+                    realm = Realm.getInstance(configuration);
                     realm.beginTransaction();
-                    realm.copyToRealmOrUpdate(currentDayMessageSendersList);
+                    realm.copyToRealmOrUpdate(currentDayMessageSendersRealmList);
                     realm.commitTransaction();
-                    formMessagesGridView(callback, currentDayMessageSendersList.size());
+                    formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
                 }
             }
         });

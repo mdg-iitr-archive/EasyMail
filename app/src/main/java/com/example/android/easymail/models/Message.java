@@ -3,25 +3,28 @@ package com.example.android.easymail.models;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import io.realm.RealmList;
+import io.realm.RealmObject;
 
 /**
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class Message {
+public class Message extends RealmObject {
 
-    @SerializedName("id")
-    public int id;
-    @SerializedName("threadId")
-    public int threadId;
-    @SerializedName("snippet")
-    public String snippet;
-    @SerializedName("labelIds")
-    public ArrayList<String> labelIds;
-    @SerializedName("payload")
-    public MessagePayload payload;
+    private String id;
+    private String threadId;
+    private String snippet;
+    private RealmList<RealmString> labelIds;
+    private MessagePayload payload;
 
-    public Message(int id, int threadId, String snippet, ArrayList<String> labelIds, MessagePayload payload) {
+    public Message(){
+
+    }
+
+    public Message(String id, String threadId, String snippet, RealmList<RealmString> labelIds, MessagePayload payload) {
 
         this.id = id;
         this.threadId = threadId;
@@ -30,11 +33,11 @@ public class Message {
         this.payload = payload;
     }
 
-    public int getThreadId() {
+    public String getThreadId() {
         return threadId;
     }
 
-    public void setThreadId(int threadId) {
+    public void setThreadId(String threadId) {
         this.threadId = threadId;
     }
 
@@ -56,21 +59,21 @@ public class Message {
         this.payload = payload;
     }
 
-    public ArrayList<String> getLabelIds() {
+    public RealmList<RealmString> getLabelIds() {
 
         return labelIds;
     }
 
-    public void setLabelIds(ArrayList<String> labelIds) {
+    public void setLabelIds(RealmList<RealmString> labelIds) {
         this.labelIds = labelIds;
     }
 
-    public int getId() {
+    public String getId() {
 
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 }

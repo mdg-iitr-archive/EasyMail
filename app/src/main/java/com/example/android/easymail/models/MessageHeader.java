@@ -4,16 +4,19 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
+import io.realm.RealmObject;
+
 /**
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class MessageHeader {
+public class MessageHeader extends RealmObject {
 
-    @SerializedName("name")
-    public String name;
-    @SerializedName("value")
-    public String value;
+    private String name;
+    private String value;
+
+    public MessageHeader() {
+    }
 
     public MessageHeader(String name, String value) {
         this.name = name;

@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.widget.LinearLayout;
 
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 
 import java.util.List;
 

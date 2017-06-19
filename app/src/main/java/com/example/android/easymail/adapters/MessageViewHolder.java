@@ -14,7 +14,8 @@ import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
 import com.example.android.easymail.R;
-import com.google.api.services.gmail.model.Message;
+import com.example.android.easymail.models.Message;
+
 
 import org.w3c.dom.Text;
 

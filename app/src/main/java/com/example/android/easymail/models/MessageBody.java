@@ -4,16 +4,16 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
+import io.realm.RealmObject;
+
 /**
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class MessageBody{
+public class MessageBody extends RealmObject {
 
-    @SerializedName("data")
-    public String data;
-    @SerializedName("size")
-    public int size;
+    private String data;
+    private int size;
 
     public MessageBody(String data, int size) {
         this.data = data;
@@ -35,5 +35,8 @@ public class MessageBody{
     public void setData(String data) {
 
         this.data = data;
+    }
+
+    public MessageBody() {
     }
 }
