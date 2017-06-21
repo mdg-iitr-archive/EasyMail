@@ -17,4 +17,12 @@
     <string name="snippet_test">Google OAuth 2.0 Playground connected to your Google Account Hi Harshit, Google OAuth 2.0 Playground now has access to your Google Account harshit.bansalec@gmail.com. Google OAuth 2.0 Playground can:",
   </string>
     <string name="read_full_message">Read Full Message</string>
+    <string name="txt_subject">Subject</string>
+    <string name="txt_notes">Notes</string>
+    <string name="txt_notif">Enable Push Notifications</string>
+    <string name="txt_alarm">Enable Alarm</string>
+    <string name="txt_date">Date</string>
+    <string name="txt_time">Time</string>
+    <string name="txt_clear">Clear</string>
+    <string name="txt_save">Save</string>
 </resources>

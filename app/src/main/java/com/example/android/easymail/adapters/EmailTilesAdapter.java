@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
 import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
+import com.example.android.easymail.CurrentDayMessageClickListener;
 import com.example.android.easymail.R;
 import com.example.android.easymail.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
@@ -36,14 +37,17 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     private int size;
     private int row, column;
     private SenderNameInitialClickListener senderNameInitialClickListener;
+    private CurrentDayMessageClickListener currentDayMessageClickListener;
 
     public EmailTilesAdapter(SenderNameInitialClickListener senderNameInitialClickListener,
+                             CurrentDayMessageClickListener currentDayMessageClickListener,
                              Context context, @NonNull List<CurrentDayMessageSendersRealmList> currentDayMessagesList,
                              int row, int column) {
         super(currentDayMessagesList);
         this.context = context;
         this.currentDayMessagesList = currentDayMessagesList;
         this.senderNameInitialClickListener = senderNameInitialClickListener;
+        this.currentDayMessageClickListener = currentDayMessageClickListener;
         this.row = row;
         this.column = column;
     }
@@ -68,7 +72,7 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     @Override
     public MessageViewHolder onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_brief, parent, false);
-        return new MessageViewHolder(view, context);
+        return new MessageViewHolder(currentDayMessageClickListener, view, row, column, context);
     }
 
     @Override

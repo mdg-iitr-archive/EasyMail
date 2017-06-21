@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .build();
 
         AuthorizationService service = new AuthorizationService(context);
-        AuthState state = null;
+        AuthState state = readAuthState();
         if (state != null){
             state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
                 @Override public void execute(

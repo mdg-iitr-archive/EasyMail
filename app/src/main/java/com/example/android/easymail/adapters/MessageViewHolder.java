@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
+import com.example.android.easymail.CurrentDayMessageClickListener;
 import com.example.android.easymail.R;
 import com.example.android.easymail.models.Message;
 
@@ -26,12 +27,14 @@ import org.w3c.dom.Text;
 public class MessageViewHolder extends ChildViewHolder {
 
     Context context;
+    CurrentDayMessageClickListener listener;
     private TextView subject, from, to, time, snippet, expand_collapse;
     private CardView emailCardView;
 
-    public MessageViewHolder(@NonNull View itemView, Context context) {
+    public MessageViewHolder(final CurrentDayMessageClickListener listener, @NonNull View itemView, final int row, final int column, Context context) {
 
         super(itemView);
+        this.listener = listener;
         subject = (TextView) itemView.findViewById(R.id.email_subject);
         from = (TextView) itemView.findViewById(R.id.email_from);
         to = (TextView) itemView.findViewById(R.id.email_to);
@@ -113,7 +116,15 @@ public class MessageViewHolder extends ChildViewHolder {
         anim.start();
     }
 
-    public void bind(Message child) {
+    public void bind(final Message child) {
+
+        emailCardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                listener.onCurrentDayMessageClickListener(v, child);
+                return true;
+            }
+        });
         String id = child.getId();
         to.setText("me");
         for (int i = 0; i < child.getPayload().getHeaders().size(); i++) {

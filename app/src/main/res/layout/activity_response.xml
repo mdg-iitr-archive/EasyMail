@@ -79,7 +79,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- The navigation drawer -->
+    <!-- The left navigation drawer -->
     <android.support.design.widget.NavigationView
         android:id="@+id/left_drawer"
         android:layout_width="wrap_content"
@@ -87,10 +87,23 @@
         android:layout_gravity="start"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:background="@color/colorPrimaryDark"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main"
+        app:headerLayout="@layout/left_nav_header_main"
         app:itemIconTint="@color/White"
         app:itemTextColor="@color/White"
-        app:menu="@menu/activity_response_drawer" />
+        app:menu="@menu/activity_response_left_drawer" />
+
+    <!-- The right navigation drawer -->
+    <android.support.design.widget.NavigationView
+        android:id="@+id/right_drawer"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/right_nav_header_main"
+        app:itemIconTint="@color/White"
+        app:itemTextColor="@color/White"
+        app:menu="@menu/activity_response_right_drawer" />
 </android.support.v4.widget.DrawerLayout>

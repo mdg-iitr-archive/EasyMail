@@ -54,7 +54,8 @@ public class ResponseInteractorImpl implements ResponseInteractor{
     private Exception lastError = null;
     private static final int HASH_TABLE_SIZE =  100;
     public HashTable hashTable = new HashTable(HASH_TABLE_SIZE);
-    private Handler handler = new Handler();;
+    private Handler handler = new Handler();
+    private List<Message> customCurrentDayMessages = new ArrayList<>();
     private List<CurrentDayMessageSendersList> currentDayMessageSendersList = new ArrayList<>();
     private List<CurrentDayMessageSendersRealmList> currentDayMessageSendersRealmList = new ArrayList<>();
     private int i, j , k , recyclerViewId;
@@ -73,23 +74,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
         RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
         currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
-        /*
-        for (int i = 0; i < currentDayMessageSendersRealmList.size(); i++) {
-
-            String sender = list.getSender();
-            RealmList<Message> messageList = list.getSenderCurrentDayMessageList();
-            currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(sender, messageList));
-        }
-
-        for (Iterator<CurrentDayMessageSendersRealmList> iterator = currentDayMessageSendersRealmList.iterator(); iterator.hasNext();){
-            CurrentDayMessageSendersRealmList obj = iterator.next();
-            String sender = obj.getSender();
-            RealmList<Message> messageList = obj.getSenderCurrentDayMessageList();
-            currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(sender, messageList));
-        }
-
-        */
-        formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
+        //formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
     }
 
     @Override
@@ -192,7 +177,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                     SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
                     String year = yearFormat.format(Calendar.getInstance().getTime());
 
-                    if (words[1].equals(day) && words[2].equals(month) && words[3].equals(year)) {
+                    if (words[1].equals("20") && words[2].equals(month) && words[3].equals(year)) {
                         currentDayMessages.add(message);
                     }
                     else {
@@ -209,7 +194,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                         }
                     });
                 } else {
-                     List<String> senders = new ArrayList<>();
+                    List<String> senders = new ArrayList<>();
                     int index = 0;
                     for (com.google.api.services.gmail.model.Message message : currentDayMessages) {
                         for (int i = 0; i < currentDayMessages.get(index).getPayload().getHeaders().size(); i++) {
@@ -271,7 +256,10 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                                         parts,
                                         partBody, file);
                                 modifiedMessage.setPayload(payload);
+                                modifiedMessage.setCustomListName(null);
+                                modifiedMessage.setCustomListDetails(null);
                                 modifiedList.add(modifiedMessage);
+                                customCurrentDayMessages.add(modifiedMessage);
                             }
                             currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(hashTable.keys[i], modifiedList));
 
@@ -307,6 +295,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         thread.join();
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(currentDayMessageSendersRealmList);
+        realm.copyToRealmOrUpdate(customCurrentDayMessages);
         realm.commitTransaction();
         formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
     }
@@ -331,3 +320,4 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
     }
 }
+

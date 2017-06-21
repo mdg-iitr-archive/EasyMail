@@ -2,12 +2,17 @@ package com.example.android.easymail;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
@@ -15,26 +20,18 @@ import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.interactor.ResponseInteractorImpl;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
-import com.example.android.easymail.models.HashTable;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
-import com.google.api.services.gmail.model.Message;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.services.gmail.GmailScopes;
 
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
-
-public class ResponseActivity extends AppCompatActivity implements SenderNameInitialClickListener, ResponseActivityView {
+public class ResponseActivity extends AppCompatActivity implements
+        SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
+        NavigationView.OnNavigationItemSelectedListener{
 
     Context context = this;
     private LinearLayout linearLayout;
@@ -44,6 +41,9 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     private EmailGridViewAdapter emailGridViewAdapter;
     private ResponsePresenterImpl responsePresenter;
     private ProgressDialog dialog;
+    private DrawerLayout drawerLayout;
+    private com.example.android.easymail.models.Message message;
+    private NavigationView leftNavigationView, rightNavigationView;
     List<CurrentDayMessageSendersList> list;
 
     @Override
@@ -56,13 +56,42 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
         String isAutoSignedInToken = getIntent().getExtras().getString("is_auto_signed_in_token");
-
+        ////////////////////////////////////////////////////////////////////////////////////////////
         responsePresenter.getOfflineMessages();
-         responsePresenter.performTokenRequest(response, isAutoSignedInToken);
+        responsePresenter.performTokenRequest(response, isAutoSignedInToken);
+        //responsePresenter.getOfflineMessages();
+
     }
 
     private void initViews(){
         linearLayout = (LinearLayout) findViewById(R.id.layout);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        leftNavigationView = (NavigationView) findViewById(R.id.left_drawer);
+        rightNavigationView = (NavigationView) findViewById(R.id.right_drawer);
+        leftNavigationView.setNavigationItemSelectedListener(this);
+        rightNavigationView.setNavigationItemSelectedListener(this);
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
 
     private void regListeners() {
@@ -126,7 +155,7 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
     @Override
     public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, RecyclerView recyclerView) {
 
-        emailTilesAdapter = new EmailTilesAdapter(this, this, list, i + 1, j + 1);
+        emailTilesAdapter = new EmailTilesAdapter(this, this, this, list, i + 1, j + 1);
         recyclerView.setAdapter(emailTilesAdapter);
     }
 
@@ -145,6 +174,64 @@ public class ResponseActivity extends AppCompatActivity implements SenderNameIni
         dialog = new ProgressDialog(ResponseActivity.this);
         if (dialog.isShowing())
             dialog.hide();
+    }
+
+    @Override
+    public void onCurrentDayMessageClickListener(View v, com.example.android.easymail.models.Message child) {
+
+        message = child;
+        drawerLayout.openDrawer(GravityCompat.END);
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Intent editMessageIntent = new Intent(ResponseActivity.this, EditMessageActivity.class);
+        Intent customListMessagesIntent = new Intent(ResponseActivity.this, CustomListMessagesActivity.class);
+
+        switch (item.getItemId()){
+
+            // On click for left navigation view
+            case R.id.left_nav_to_do:
+                editMessageIntent.putExtra("listName", "To-Do");
+                startActivity(customListMessagesIntent);
+                break;
+            case R.id.left_nav_follow_up:
+                customListMessagesIntent.putExtra("listName", "Follow Up");
+                startActivity(customListMessagesIntent);
+                break;
+            case R.id.left_nav_launch_events:
+                customListMessagesIntent.putExtra("listName", "Launch Events");
+                startActivity(customListMessagesIntent);
+                break;
+            case R.id.left_nav_business_events:
+                customListMessagesIntent.putExtra("listName", "Business Events");
+                startActivity(customListMessagesIntent);
+                break;
+
+            // On click for right navigation view
+            case R.id.right_nav_to_do:
+                editMessageIntent.putExtra("listName", "To-Do");
+                editMessageIntent.putExtra("message", message);
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_follow_up:
+                editMessageIntent.putExtra("listName", "Follow Up");
+                editMessageIntent.putExtra("message", message);
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_launch_events:
+                editMessageIntent.putExtra("listName", "Launch Events");
+                editMessageIntent.putExtra("message", message);
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_business_events:
+                editMessageIntent.putExtra("listName", "Business Events");
+                editMessageIntent.putExtra("message", message);
+                startActivity(editMessageIntent);
+                break;
+        }
+        return true;
     }
 }
 
