@@ -23,6 +23,7 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
@@ -50,6 +51,7 @@ public class ResponseActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_response);
+
         initViews();
         regListeners();
         responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
@@ -174,6 +176,15 @@ public class ResponseActivity extends AppCompatActivity implements
         dialog = new ProgressDialog(ResponseActivity.this);
         if (dialog.isShowing())
             dialog.hide();
+    }
+
+    @Override
+    public void getCredential(String accessToken) {
+
+
+        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+        serviceIntent.putExtra("token", accessToken);
+        startService(serviceIntent);
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.widget.LinearLayout;
 
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import java.util.List;
 
@@ -23,4 +24,5 @@ public interface ResponseActivityView {
     void addLinearLayoutToDisplay(LinearLayout currentLinearLayout);
     void showZeroMessagesReceivedToast();
     void hideDialog();
+    void getCredential(String accessToken);
 }

@@ -104,6 +104,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                                 AuthState state = new AuthState(response, resp, ex);
                                 callback.writeAuthState(state);
                                 GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+                                callback.setCredential(accessToken);
                                 try {
                                     startBackgroundTask(callback, credential);
                                 } catch (InterruptedException e) {

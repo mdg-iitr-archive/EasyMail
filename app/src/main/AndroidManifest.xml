@@ -39,7 +39,13 @@
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".EditMessageActivity" />
-        <activity android:name=".CustomListMessagesActivity"></activity>
+        <activity android:name=".CustomListMessagesActivity" />
+
+        <service
+            android:name=".MessagesPullService"
+            android:exported="false" />
+
+        <activity android:name=".AllMessagesActivity"></activity>
     </application>
 
 </manifest>

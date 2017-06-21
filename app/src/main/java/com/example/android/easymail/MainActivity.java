@@ -1,6 +1,7 @@
 package com.example.android.easymail;
 
 import android.app.Dialog;
+import android.app.IntentService;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -63,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sharedPref =getPreferences(Context.MODE_PRIVATE);
 
+        sharedPref =getPreferences(Context.MODE_PRIVATE);
         Scope scope = new Scope("https://www.googleapis.com/auth/gmail.readonly");
 
         initViews();
