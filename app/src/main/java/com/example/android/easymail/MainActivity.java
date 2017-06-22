@@ -1,5 +1,6 @@
 package com.example.android.easymail;
 
+import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.IntentService;
 import android.app.PendingIntent;

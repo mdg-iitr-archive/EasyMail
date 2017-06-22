@@ -4,6 +4,7 @@
     package="com.example.android.easymail">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
     <application
@@ -45,7 +46,13 @@
             android:name=".MessagesPullService"
             android:exported="false" />
 
-        <activity android:name=".AllMessagesActivity"></activity>
+        <activity android:name=".AllMessagesActivity"/>
+
+        <provider
+            android:authorities="com.example.android.easymail.provider"
+            android:name="com.example.android.easymail.StubContentProvider"
+            android:exported="false"
+            android:syncable="true"/>
     </application>
 
 </manifest>

@@ -78,7 +78,8 @@
         android:layout_marginStart="16dp"
         android:layout_below="@+id/show_notif_checkbox"
         android:labelFor="@+id/edit_date"
-        android:text="@string/txt_date"/>
+        android:text="@string/txt_date"
+        android:onClick="showDatePickerDialog"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -92,8 +93,7 @@
         android:layout_below="@+id/text_date"
         android:layout_marginStart="16dp"
         android:inputType="date"
-        tools:text="Mon, April 27, 2015"
-        android:onClick="showDatePickerDialog"/>
+        tools:text="Mon, April 27, 2015" />
     <TextView
         android:id="@+id/text_time"
         android:layout_width="wrap_content"
@@ -102,7 +102,8 @@
         android:layout_marginStart="16dp"
         android:layout_below="@+id/edit_date"
         android:labelFor="@+id/edit_time"
-        android:text="@string/txt_time"/>
+        android:text="@string/txt_time"
+        android:onClick="showTimePickerDialog"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -116,8 +117,7 @@
         android:layout_below="@+id/text_time"
         android:layout_marginStart="16dp"
         android:inputType="time"
-        tools:text="11:59 PM"
-        android:onClick="showTimePickerDialog"/>
+        tools:text="11:59 PM" />
     <CheckBox
         android:id="@+id/show_alarm_checkbox"
         android:layout_width="wrap_content"

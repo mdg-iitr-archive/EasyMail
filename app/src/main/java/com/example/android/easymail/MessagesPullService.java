@@ -39,6 +39,10 @@ public class MessagesPullService extends IntentService {
      * @param name Used to name the worker thread, important only for debugging.
      */
 
+    public MessagesPullService() {
+        super(" ");
+    }
+
     public MessagesPullService(String name) {
         super(name);
     }

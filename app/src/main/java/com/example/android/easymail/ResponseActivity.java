@@ -1,5 +1,7 @@
 package com.example.android.easymail;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -24,11 +26,16 @@ import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.services.gmail.model.Message;
 
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 public class ResponseActivity extends AppCompatActivity implements
         SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
@@ -46,6 +53,8 @@ public class ResponseActivity extends AppCompatActivity implements
     private com.example.android.easymail.models.Message message;
     private NavigationView leftNavigationView, rightNavigationView;
     List<CurrentDayMessageSendersList> list;
+    AccountManager accountManager;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +63,8 @@ public class ResponseActivity extends AppCompatActivity implements
 
         initViews();
         regListeners();
+        accountManager = AccountManager.get(this);
+        // Account accountList[] = accountManager.getAccountsByType()
         responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
@@ -181,7 +192,6 @@ public class ResponseActivity extends AppCompatActivity implements
     @Override
     public void getCredential(String accessToken) {
 
-
         Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
         serviceIntent.putExtra("token", accessToken);
         startService(serviceIntent);
@@ -191,6 +201,11 @@ public class ResponseActivity extends AppCompatActivity implements
     public void onCurrentDayMessageClickListener(View v, com.example.android.easymail.models.Message child) {
 
         message = child;
+        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
+        realm = Realm.getInstance(configuration);
+        realm.beginTransaction();
+        realm.copyToRealmOrUpdate(message);
+        realm.commitTransaction();
         drawerLayout.openDrawer(GravityCompat.END);
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
     }
@@ -223,22 +238,24 @@ public class ResponseActivity extends AppCompatActivity implements
             // On click for right navigation view
             case R.id.right_nav_to_do:
                 editMessageIntent.putExtra("listName", "To-Do");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_follow_up:
                 editMessageIntent.putExtra("listName", "Follow Up");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_launch_events:
                 editMessageIntent.putExtra("listName", "Launch Events");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
+                RealmResults<com.example.android.easymail.models.Message> results = realm.where(com.example.android.easymail.models.Message.class).equalTo("id", message.getId()).findAll();
+                com.example.android.easymail.models.Message messages = realm.copyFromRealm(results).get(0);
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_business_events:
                 editMessageIntent.putExtra("listName", "Business Events");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
         }
