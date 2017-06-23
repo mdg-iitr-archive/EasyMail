@@ -30,7 +30,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse response, String accountType, String authTokenType, String[] requiredFeatures, Bundle options) throws NetworkErrorException {
-/*
+
         final Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.ARG_ACCOUNT_TYPE, accountType);
         intent.putExtra(MainActivity.ARG_AUTH_TYPE, authTokenType);
@@ -39,8 +39,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         final Bundle bundle = new Bundle();
         bundle.putParcelable(AccountManager.KEY_INTENT, intent);
         return bundle;
-        */
-        return null;
     }
 
     @Override
@@ -65,18 +63,18 @@ public class Authenticator extends AbstractAccountAuthenticator {
             result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
             return result;
         }
-/*
+
         // If we get here, then we need to re-prompt them for their credentials.
         // We do that by creating an intent to display our AuthenticatorActivity.
         final Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
         intent.putExtra(MainActivity.ARG_ACCOUNT_TYPE, account.type);
         intent.putExtra(MainActivity.ARG_AUTH_TYPE, authTokenType);
+        intent.putExtra(MainActivity.ARG_IS_ADDING_NEW_ACCOUNT, true);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
         final Bundle bundle = new Bundle();
         bundle.putParcelable(AccountManager.KEY_INTENT, intent);
-        */return null;
-
-    }
+        return bundle;
+   }
 
     @Override
     public String getAuthTokenLabel(String authTokenType) {

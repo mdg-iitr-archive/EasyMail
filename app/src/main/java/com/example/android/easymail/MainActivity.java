@@ -1,5 +1,7 @@
 package com.example.android.easymail;
 
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.IntentService;
@@ -14,6 +16,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,20 +36,32 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
+import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.ResponseTypeValues;
+import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
+import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
+public class MainActivity extends AccountAuthenticatorActivity implements GoogleApiClient.OnConnectionFailedListener {
+
+    public final static String ARG_ACCOUNT_TYPE = "ACCOUNT_TYPE";
+    public final static String ARG_AUTH_TYPE = "AUTH_TYPE";
+    public final static String ARG_ACCOUNT_NAME = "ACCOUNT_NAME";
+    public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
+    public static final String KEY_ERROR_MESSAGE = "ERR_MSG";
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String mAuthEndPoint = "https://accounts.google.com/o/oauth2/v2/auth";
     private static final String mTokenEndPoint = "https://www.googleapis.com/oauth2/v4/token";
@@ -55,11 +70,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private static final String scope = "https://www.googleapis.com/auth/gmail.readonly";
     private static final int REQUEST_SIGN_IN = 1001;
     private static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    public static final String[] scopes = {GmailScopes.GMAIL_READONLY};
     Context context = this;
     SignInButton loginButton;
     TextView outputText;
     private SharedPreferences sharedPref;
     GoogleApiClient googleApiClient;
+    AccountManager accountManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,13 +94,51 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .requestScopes(scope)
                 .build();
 
-
+/*
         googleApiClient = new GoogleApiClient.Builder(MainActivity.this)
-                .enableAutoManage(MainActivity.this, this)
+                .enableAutoManage(new FragmentActivity(), this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+*/
+        accountManager = AccountManager.get(this);
+        final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
+        final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
 
         AuthorizationService service = new AuthorizationService(context);
+
+        if (response != null) {
+            service.performTokenRequest(
+                    response.createTokenExchangeRequest(),
+                    new AuthorizationService.TokenResponseCallback() {
+                        @Override
+                        public void onTokenRequestCompleted(TokenResponse resp, AuthorizationException ex) {
+                            if (resp != null) {
+                                //exchange succeeded\\
+                                final String accountType = Constants.ACCOUNT_TYPE;
+                                AuthState state = new AuthState(response, resp, ex);
+                                String deserializedAuthState = state.jsonSerializeString();
+                                String userName = "me";
+                                Bundle data = new Bundle();
+                                data.putString(AccountManager.KEY_ACCOUNT_NAME, userName);
+                                data.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+                                data.putString(AccountManager.KEY_AUTHTOKEN, deserializedAuthState);
+                                final Intent res = new Intent();
+                                res.putExtras(data);
+                                final Account account = new Account(userName, res.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+                                accountManager.addAccountExplicitly(account, "password", null);
+                                accountManager.setAuthToken(account, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, deserializedAuthState);
+                                setAccountAuthenticatorResult(res.getExtras());
+                                setResult(RESULT_OK, res);
+                                finish();
+                                Intent i = new Intent(MainActivity.this, ResponseActivity.class);
+                                startActivity(i);
+                            }
+                        }
+                    });
+        }
+
+
+        /*
         AuthState state = readAuthState();
         if (state != null){
             state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
@@ -105,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 }
             });
         }
+        */
+
 
 /*
         OptionalPendingResult<GoogleSignInResult> pendingResult =
@@ -167,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         ).setScope(scope).build();
 
         AuthorizationService service = new AuthorizationService(context);
-        Intent postAuthIntent = new Intent(MainActivity.this, ResponseActivity.class);
+        Intent postAuthIntent = new Intent(MainActivity.this, MainActivity.class);
         postAuthIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Intent authCanceledIntent = new Intent(MainActivity.this, MainActivity.class);
         authCanceledIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
