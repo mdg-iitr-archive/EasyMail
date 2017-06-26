@@ -17,10 +17,18 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.MessagePartHeader;
+import com.sun.mail.imap.IMAPFolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -33,15 +41,17 @@ import io.realm.RealmList;
 public class MessagesPullService extends IntentService {
 
     private Realm realm;
+
+
+    public MessagesPullService() {
+        super(" ");
+    }
+
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-
-    public MessagesPullService() {
-        super(" ");
-    }
 
     public MessagesPullService(String name) {
         super(name);
@@ -51,10 +61,86 @@ public class MessagesPullService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         // Get an instance of realm
+        long startTime = System.nanoTime();
+        Realm.init(this);
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
 
         String accessToken = (String) intent.getExtras().get("token");
+
+        try {
+
+            //create properties field
+            Properties props = System.getProperties();
+            props.setProperty("mail.store.protocol", "imaps");
+
+            Session session = Session.getDefaultInstance(props, null);
+
+            Store store = session.getStore("imaps");
+            store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "harshit1206");
+
+            IMAPFolder folder = (IMAPFolder) store.getFolder("inbox"); // This doesn't work for other email account
+            //folder = (IMAPFolder) store.getFolder("inbox"); This works for both email account
+
+            if(!folder.isOpen())
+                folder.open(Folder.READ_WRITE);
+            javax.mail.Message[] messages = folder.getMessages();
+            System.out.println("No of Messages : " + folder.getMessageCount());
+            System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
+            System.out.println(messages.length);
+            /*
+            Properties properties = new Properties();
+            Properties props = new Properties();
+            props.put("mail.imap.ssl.enable", "true"); // required for Gmail
+            props.put("mail.imap.sasl.enable", "true");
+            props.put("mail.imap.sasl.mechanisms", "XOAUTH2");
+            props.put("mail.imap.auth.login.disable", "true");
+            props.put("mail.imap.auth.plain.disable", "true");
+            Session session = Session.getInstance(props);
+            Store store = session.getStore("imap");
+            store.connect("imap.gmail.com", "harshit.bansalec@gmail.com", accessToken);
+            /*
+            properties.put("mail.pop3.host", "pop.gmail.com");
+            properties.put("mail.pop3.port", "995");
+            properties.put("mail.pop3.starttls.enable", "true");
+            Session emailSession = Session.getDefaultInstance(properties);
+
+            //create the POP3 store object and connect with the pop server
+            Store store = emailSession.getStore("pop3s");
+
+            store.connect("pop.gmail.com", "harshit.bansalec@gmail.com", "harshit1206");
+
+            //create the folder object and open it
+
+            ImapFolder emailFolder = store.getFolder("INBOX");
+            emailFolder.open(Folder.READ_ONLY);
+
+            // retrieve the messages from the folder in an array and print it
+            javax.mail.Message[] messages = emailFolder.getMessages();
+            int count = emailFolder.getMessageCount();
+            int ucount = emailFolder.getNewMessageCount();
+            int ncount = emailFolder.getUnreadMessageCount();
+            int length = messages.length;
+            System.out.println("messages.length---" + messages.length);
+
+            for (int i = 0, n = messages.length; i < n; i++) {
+                javax.mail.Message message = messages[i];
+                System.out.println("---------------------------------");
+                System.out.println("Email Number " + (i + 1));
+                System.out.println("Subject: " + message.getSubject());
+                System.out.println("From: " + message.getFrom()[0]);
+                // System.out.println("Text: " + message.getContent().toString;
+
+            }
+            */
+            //close the store and folder objects
+            folder.close(false);
+            store.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -106,7 +192,7 @@ public class MessagesPullService extends IntentService {
 
             //Setting of snippet to modified message
             modifiedMessage.setSnippet(message.getSnippet());
-
+/*
             //Setting of payload to modified message
             String mimeType = message.getPayload().getMimeType();
             RealmList<MessageHeader> headers = new RealmList<>();
@@ -144,15 +230,19 @@ public class MessagesPullService extends IntentService {
 
             //Setting of custom list details to modified message
             modifiedMessage.setCustomListDetails(null);
+
             modifiedList.add(modifiedMessage);
         }
+    */
         realm.beginTransaction();
-        realm.copyToRealmOrUpdate(modifiedList);
+        //realm.copyToRealmOrUpdate(modifiedList);
         realm.commitTransaction();
 
         //Make a local intent for broadcasting the event
         Intent localIntent = new Intent(Constants.BROADCAST_ACTION).
                 putExtra(Constants.EXTENDED_DATA_STATUS, "completed");
+
+        long endTime = System.nanoTime();
 
         //Use local broadcast manager to broadcast the intent to all the registered receivers of the application
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
