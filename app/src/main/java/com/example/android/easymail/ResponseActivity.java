@@ -9,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -110,7 +111,7 @@ public class ResponseActivity extends AppCompatActivity implements
 
                 // account is present, thus get the deserialized auth state
                 ACCOUNT =  accountList[0];
-                final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(accountList[0], Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
+                final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(ACCOUNT, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
                 try {
 
                     Bundle bnd = future.getResult();
@@ -118,30 +119,35 @@ public class ResponseActivity extends AppCompatActivity implements
                     AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
                     AuthorizationService service = new AuthorizationService(context);
                     final ResponseActivityView instance = this;
-
+                    new RequestAccessToken(state).execute();
+                }
+                    /*
                     // obtain the fresh access token from the auth state
                     state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
                             if (ex == null) {
-                                responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
-                                final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
-                                final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
-                                responsePresenter.getOfflineMessages();
-                                responsePresenter.performTokenRequest(response, accessToken);
+                                new RequestAccessToken()
+                                //responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
+                                //final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
+                                //final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
+                                //responsePresenter.getOfflineMessages();
+                                //responsePresenter.performTokenRequest(response, accessToken);
                             } else {
                                 Log.e("auth token exception", ex.toString());
                             }
                         }
                     });
                     Log.d("easymail", "GetToken Bundle is " + bnd);
-                } catch (Exception e) {
+                }
+                */catch (Exception e) {
                     e.printStackTrace();
                 }
+
             }
         }
         mResolver = getContentResolver();
-        mResolver.addPeriodicSync(ACCOUNT, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL);
+        // mResolver.addPeriodicSync(ACCOUNT, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL);
 
         /*
         responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
@@ -353,6 +359,45 @@ public class ResponseActivity extends AppCompatActivity implements
                 break;
         }
         return true;
+    }
+
+    public void refresh(View view) {
+
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(ACCOUNT, AUTHORITY, settingsBundle);
+    }
+
+    public class RequestAccessToken extends AsyncTask<Void, Void, Void>{
+
+        AuthState authState;
+        public RequestAccessToken(AuthState state){
+            authState = state;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            AuthorizationService service = new AuthorizationService(context);
+
+            // obtain the fresh access token from the auth state
+            authState.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
+                @Override
+                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                    if (ex == null) {
+                        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+                        serviceIntent.putExtra("token", accessToken);
+                        startService(serviceIntent);
+                    } else {
+                        Log.e("auth token exception", ex.toString());
+                    }
+                }
+            });
+            Log.d("easymail", "GetToken Bundle is ");
+            return null;
+        }
     }
 }
 
