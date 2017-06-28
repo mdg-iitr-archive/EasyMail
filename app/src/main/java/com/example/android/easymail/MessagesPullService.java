@@ -3,6 +3,7 @@ package com.example.android.easymail;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.MessageBody;
@@ -21,15 +22,22 @@ import com.sun.mail.imap.IMAPFolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.Address;
+import javax.mail.FetchProfile;
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
-
+import javax.mail.UIDFolder;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.search.FlagTerm;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
@@ -41,7 +49,7 @@ import io.realm.RealmList;
 public class MessagesPullService extends IntentService {
 
     private Realm realm;
-
+    private List<ArrayList<String>> list = new ArrayList<>();
 
     public MessagesPullService() {
         super(" ");
@@ -67,7 +75,6 @@ public class MessagesPullService extends IntentService {
         realm = Realm.getInstance(configuration);
 
         String accessToken = (String) intent.getExtras().get("token");
-
         try {
 
             //create properties field
@@ -79,15 +86,56 @@ public class MessagesPullService extends IntentService {
             Store store = session.getStore("imaps");
             store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "harshit1206");
 
-            IMAPFolder folder = (IMAPFolder) store.getFolder("inbox"); // This doesn't work for other email account
-            //folder = (IMAPFolder) store.getFolder("inbox"); This works for both email account
+            //IMAPFolder folder = (IMAPFolder) store.getFolder("inbox"); // This doesn't work for other email account
+            Folder folder = store.getFolder("inbox"); // This doesn't work for other email account
+
+            //folder = (IMAPFolder) store.getFolder("inbox"); 
 
             if(!folder.isOpen())
                 folder.open(Folder.READ_WRITE);
+
             javax.mail.Message[] messages = folder.getMessages();
             System.out.println("No of Messages : " + folder.getMessageCount());
             System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
             System.out.println(messages.length);
+            FetchProfile profile = new FetchProfile();
+            profile.add(FetchProfile.Item.ENVELOPE);
+            profile.add("Sender");
+            folder.fetch(messages,profile);
+/*
+            javax.mail.Message[] messages = folder.getMessages();
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add("Subject");
+            folder.fetch(messages, fp);
+            System.out.println("No of Messages : " + folder.getMessageCount());
+            System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
+            System.out.println(messages.length);
+            */
+            for (int i=0; i < messages.length;i++)
+            {
+                // Create a new message using MimeMessage copy constructor
+                javax.mail.Message cmsg = messages[i];
+                //Log.i("messages", Integer.toString(i) + " " + cmsg.getFrom()[0]);
+                Address[] froms = cmsg.getFrom();
+                String email = froms == null ? null : ((InternetAddress) froms[0]).getPersonal();
+                Log.i("messages", Integer.toString(i) + " " + email);
+                Log.i("star", "*****************************************************************************");
+                /*
+                System.out.println("MESSAGE " + (i + 1) + ":");
+                javax.mail.Message msg =  messages[i];
+                //System.out.println(msg.getMessageNumber());
+                //Object String;
+                //System.out.println(folder.getUID(msg)
+                ArrayList<String> strings = new ArrayList<>();
+                strings.add(Integer.toString(msg.getMessageNumber()));
+                strings.add(Arrays.toString(msg.getFrom()));
+                list.add(strings);
+                */
+            }
+            long endTime = System.nanoTime();
+            int i =0;
+
             /*
             Properties properties = new Properties();
             Properties props = new Properties();
@@ -248,4 +296,5 @@ public class MessagesPullService extends IntentService {
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 }
+
 
