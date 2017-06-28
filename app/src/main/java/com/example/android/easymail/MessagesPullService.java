@@ -33,16 +33,15 @@ import io.realm.RealmList;
 public class MessagesPullService extends IntentService {
 
     private Realm realm;
+
+    public MessagesPullService() {
+        super(" ");
+    }
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-
-    public MessagesPullService() {
-        super(" ");
-    }
-
     public MessagesPullService(String name) {
         super(name);
     }
@@ -51,6 +50,7 @@ public class MessagesPullService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         // Get an instance of realm
+        Realm.init(this);
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
 
