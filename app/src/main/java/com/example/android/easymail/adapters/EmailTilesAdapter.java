@@ -2,28 +2,19 @@ package com.example.android.easymail.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
 import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
-import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
-import com.example.android.easymail.CurrentDayMessageClickListener;
+import com.example.android.easymail.interfaces.CurrentDayMessageClickListener;
 import com.example.android.easymail.R;
-import com.example.android.easymail.SenderNameInitialClickListener;
-import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.interfaces.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
-import com.example.android.easymail.models.HashTable;
 import com.example.android.easymail.models.Message;
 
 
 import java.util.List;
-
-import io.realm.RealmList;
 
 /**
  * Created by Harshit Bansal on 6/7/2017.

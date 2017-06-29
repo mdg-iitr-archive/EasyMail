@@ -5,8 +5,7 @@ import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
 import com.example.android.easymail.R;
-import com.example.android.easymail.SenderNameInitialClickListener;
-import com.example.android.easymail.models.CurrentDayMessageSendersList;
+import com.example.android.easymail.interfaces.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 
 /**

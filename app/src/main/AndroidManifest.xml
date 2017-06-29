@@ -3,14 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.android.easymail">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
 
     <application
         android:allowBackup="true"
@@ -32,56 +32,57 @@
                     android:scheme="com.example.android.easymail" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"/>
-        <activity android:name=".ResponseActivity" >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ResponseActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-        <activity
-            android:name=".HomeActivity"
-            android:label="@string/title_activity_home"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".EditMessageActivity" />
         <activity android:name=".CustomListMessagesActivity" />
 
-        <!-- service for pullling the entire messages !-->
+        <!-- service for pullling the entire messages ! -->
         <service
-            android:name=".MessagesPullService"
+            android:name=".services.MessagesPullService"
             android:exported="false" />
 
-        <activity android:name=".AllMessagesActivity"/>
+        <activity android:name=".AllMessagesActivity" />
 
-        <!-- stub content provider !-->
+        <!-- stub content provider ! -->
         <provider
+            android:name=".StubContentProvider"
             android:authorities="com.example.android.easymail.provider"
-            android:name="com.example.android.easymail.StubContentProvider"
             android:exported="false"
-            android:syncable="true"/>
+            android:syncable="true" />
 
-        <!-- authenticator service !-->
-        <service
-            android:name="com.example.android.easymail.AuthenticatorService">
+        <!-- authenticator service ! -->
+        <service android:name=".services.AuthenticatorService">
             <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
+                <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
+
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
 
-        <!-- sync adapter service !-->
+        <!-- sync adapter service ! -->
         <service
-            android:name="com.example.android.easymail.SyncService"
+            android:name=".services.SyncService"
             android:exported="true"
             android:process=":sync">
             <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
+                <action android:name="android.content.SyncAdapter" />
             </intent-filter>
-            <meta-data android:name="android.content.SyncAdapter"
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+
+        <activity android:name=".SelectedSenderMessages"></activity>
     </application>
+
 </manifest>
