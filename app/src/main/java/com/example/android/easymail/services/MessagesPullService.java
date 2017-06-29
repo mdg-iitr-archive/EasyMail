@@ -18,6 +18,9 @@ import javax.mail.Folder;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
+import javax.mail.search.FromTerm;
+import javax.mail.search.SearchTerm;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -31,6 +34,7 @@ public class MessagesPullService extends IntentService {
     private Realm realm;
     private List<ArrayList<String>> list = new ArrayList<>();
     HashMap<String, Integer> map;
+    HashMap<String, String> addressMap;
 
     public MessagesPullService() {
         super(" ");
@@ -74,14 +78,14 @@ public class MessagesPullService extends IntentService {
 
             if(!folder.isOpen())
                 folder.open(Folder.READ_WRITE);
-
-            javax.mail.Message[] messages = folder.getMessages();
+            SearchTerm sender = new FromTerm(new InternetAddress("moodle@brijeshkumar.com"));
+            javax.mail.Message[] messages = folder.search(sender);
             System.out.println("No of Messages : " + folder.getMessageCount());
             System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
             System.out.println(messages.length);
             FetchProfile profile = new FetchProfile();
             profile.add(FetchProfile.Item.ENVELOPE);
-            profile.add("Sender");
+            //profile.add("Sender");
             folder.fetch(messages,profile);
 /*
             javax.mail.Message[] messages = folder.getMessages();
@@ -93,7 +97,8 @@ public class MessagesPullService extends IntentService {
             System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
             System.out.println(messages.length);
             */
-            map = new HashMap<String, Integer>();
+            map = new HashMap<>();
+            addressMap = new HashMap<>();
             for (int i=0; i < messages.length;i++)
             {
                 // Create a new message using MimeMessage copy constructor
@@ -106,9 +111,11 @@ public class MessagesPullService extends IntentService {
                 }
                 if (map.containsKey(email)){
                     map.put(email, map.get(email)+1);
+                    addressMap.put(email, ((InternetAddress) froms[0]).getAddress());
                 }
                 else{
                     map.put(email, 1);
+                    addressMap.put(email, ((InternetAddress) froms[0]).getAddress());
                 }
 
                 Log.i("messages", Integer.toString(i) + " " + email);
@@ -191,6 +198,7 @@ public class MessagesPullService extends IntentService {
         Intent localIntent = new Intent(Constants.BROADCAST_ACTION);
         localIntent.putExtra(Constants.EXTENDED_DATA_STATUS, "completed");
         localIntent.putExtra("hashMap", map);
+        localIntent.putExtra("addressMap", addressMap);
         long endTime = System.nanoTime();
 
         //Use local broadcast manager to broadcast the intent to all the registered receivers of the application
