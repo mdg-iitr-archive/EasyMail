@@ -1,10 +1,11 @@
-package com.example.android.easymail;
+package com.example.android.easymail.services;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.example.android.easymail.Authenticator;
 import com.google.android.gms.auth.api.Auth;
 
 /**

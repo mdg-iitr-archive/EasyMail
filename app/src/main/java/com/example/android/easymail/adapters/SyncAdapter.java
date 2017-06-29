@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.adapters;
 
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;

@@ -1,8 +1,10 @@
-package com.example.android.easymail;
+package com.example.android.easymail.services;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+
+import com.example.android.easymail.SyncAdapter;
 
 /**
  * Created by Harshit Bansal on 6/23/2017.

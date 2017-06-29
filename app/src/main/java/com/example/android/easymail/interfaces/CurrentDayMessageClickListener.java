@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.interfaces;
 
 import android.view.View;
 

@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.interfaces;
 
 /**
  * Created by Harshit Bansal on 6/13/2017.
