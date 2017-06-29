@@ -13,4 +13,7 @@
     <item
         android:id="@+id/left_nav_business_events"
         android:title="Business Events"/>
+    <item
+        android:id="@+id/left_nav_mail_classifier"
+        android:title="Mails From Senders"/>
 </menu>

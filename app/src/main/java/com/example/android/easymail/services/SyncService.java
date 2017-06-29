@@ -4,7 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.example.android.easymail.SyncAdapter;
+import com.example.android.easymail.adapters.SyncAdapter;
 
 /**
  * Created by Harshit Bansal on 6/23/2017.

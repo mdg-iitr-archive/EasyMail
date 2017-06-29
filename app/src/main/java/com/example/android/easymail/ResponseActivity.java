@@ -27,17 +27,17 @@ import android.widget.Toast;
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.interactor.ResponseInteractorImpl;
+import com.example.android.easymail.interfaces.CurrentDayMessageClickListener;
+import com.example.android.easymail.interfaces.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
+import com.example.android.easymail.services.MessagesPullService;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.services.gmail.model.Message;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 
 import java.util.ArrayList;
@@ -46,7 +46,6 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import retrofit2.http.GET;
 
 public class ResponseActivity extends AppCompatActivity implements
         SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
@@ -79,6 +78,7 @@ public class ResponseActivity extends AppCompatActivity implements
                     SECONDS_PER_MINUTE;
     // A content resolver for accessing the provider
     ContentResolver mResolver;
+    public String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,11 +124,13 @@ public class ResponseActivity extends AppCompatActivity implements
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
                             if (ex == null) {
+                                token = accessToken;
                                 responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
-                                final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
-                                final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
-                                responsePresenter.getOfflineMessages();
-                                responsePresenter.performTokenRequest(response, accessToken);
+                                //Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+                                //serviceIntent.putExtra("token", accessToken);
+                                //startService(serviceIntent);
+                                //responsePresenter.getOfflineMessages();
+                                //responsePresenter.performTokenRequest(response, accessToken);
                             } else {
                                 Log.e("auth token exception", ex.toString());
                             }
@@ -307,6 +309,7 @@ public class ResponseActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Intent editMessageIntent = new Intent(ResponseActivity.this, EditMessageActivity.class);
         Intent customListMessagesIntent = new Intent(ResponseActivity.this, CustomListMessagesActivity.class);
+        Intent mailClassifierIntent = new Intent(ResponseActivity.this, AllMessagesActivity.class);
 
         switch (item.getItemId()){
 
@@ -326,6 +329,10 @@ public class ResponseActivity extends AppCompatActivity implements
             case R.id.left_nav_business_events:
                 customListMessagesIntent.putExtra("listName", "Business Events");
                 startActivity(customListMessagesIntent);
+                break;
+            case R.id.left_nav_mail_classifier:
+                mailClassifierIntent.putExtra("token", token);
+                startActivity(mailClassifierIntent);
                 break;
 
             // On click for right navigation view
