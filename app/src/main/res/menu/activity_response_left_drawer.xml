@@ -16,4 +16,10 @@
     <item
         android:id="@+id/left_nav_mail_classifier"
         android:title="Mails From Senders"/>
+    <item
+        android:id="@+id/left_nav_search_by_date"
+        android:title="Search By Date"/>
+    <item
+        android:id="@+id/left_nav_settings"
+        android:title="Settings"/>
 </menu>
