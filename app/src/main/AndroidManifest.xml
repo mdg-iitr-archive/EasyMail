@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -82,7 +84,17 @@
                 android:resource="@xml/syncadapter" />
         </service>
 
-        <activity android:name=".SelectedSenderMessages"></activity>
+        <activity android:name=".SelectedSenderMessages" />
+        <activity android:name=".SearchByDateActivity" />
+        <activity android:name=".CustomListMessageDetailActivity" />
+
+        <receiver android:name=".AlarmReceiver" />
+
+        <service android:name=".services.AlarmService" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>
