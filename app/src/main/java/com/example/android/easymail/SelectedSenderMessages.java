@@ -308,7 +308,7 @@ public class SelectedSenderMessages extends AppCompatActivity {
             Log.e("Attachment: ", "Directory not created");
         }
     }
-    
+
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
