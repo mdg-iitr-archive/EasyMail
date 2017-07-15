@@ -22,6 +22,7 @@ public class Message extends RealmObject {
     private String id;
     private String threadId;
     private String snippet;
+    private String sender;
     private RealmList<RealmString> labelIds;
     private MessagePayload payload;
     private String customListName;
@@ -73,6 +74,14 @@ public class Message extends RealmObject {
 
     public CustomListDetails getCustomListDetails() {
         return customListDetails;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 
     public void setCustomListDetails(CustomListDetails customListDetails) {

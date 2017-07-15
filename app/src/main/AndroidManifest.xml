@@ -91,10 +91,10 @@
         <receiver android:name=".AlarmReceiver" />
 
         <service android:name=".services.AlarmService" />
-
+        <service android:name=".services.WeeklyMessagesService"/>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
     </application>
 
 </manifest>
