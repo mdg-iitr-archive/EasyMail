@@ -16,7 +16,7 @@ public class SenderViewHolder extends ParentViewHolder {
 
     private TextView emailSenderInitial;
     private TextView emailCount;
-    public SenderViewHolder(final SenderNameInitialClickListener listener, View itemView, final int row, final int column) {
+    public SenderViewHolder(final SenderNameInitialClickListener listener, View itemView, final int day, final int row, final int column) {
         super(itemView);
         emailSenderInitial = (TextView) itemView.findViewById(R.id.email_item_name_initial);
         emailCount = (TextView) itemView.findViewById(R.id.email_number);
@@ -24,10 +24,10 @@ public class SenderViewHolder extends ParentViewHolder {
             @Override
             public void onClick(View v) {
                 if (isExpanded()) {
-                    listener.onSenderNameInitialClick(row, column, 1);
+                    listener.onSenderNameInitialClick(day, row, column, 1);
                     collapseView();
                 } else {
-                    listener.onSenderNameInitialClick(row, column, 0);
+                    listener.onSenderNameInitialClick(day, row, column, 0);
                     expandView();
                 }
             }

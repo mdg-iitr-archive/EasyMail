@@ -1,10 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="auto_download_attachment"
-        android:summary="@string/auto_download_attachment_summary"
-        android:title="@string/auto_download_attachment_title"/>
+
 
     <SwitchPreference
         android:defaultValue="true"

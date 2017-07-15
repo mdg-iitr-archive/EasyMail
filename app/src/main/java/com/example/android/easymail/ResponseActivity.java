@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,6 +25,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
@@ -84,6 +86,7 @@ public class ResponseActivity extends AppCompatActivity implements
     ContentResolver mResolver;
     public String token;
     public String lastSyncMessageId = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,13 +94,17 @@ public class ResponseActivity extends AppCompatActivity implements
 
         initViews();
         regListeners();
-        accountManager = AccountManager.get(this);
+        getSavedPreferences();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        isAutoDownloadAttachment = preferences.getBoolean("auto_download_attachment", false);
+        accountManager = AccountManager.get(this);
+        responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
+        //responsePresenter.getOfflineMessages();
+        //responsePresenter.performTokenRequest(null, "ya29.GluEBHV-rj_vGObwrHd0p9oeto0yvKWtPhRDx7R1NxcGhhdsCPJmlPuKWfYba3t2R1ZG4nRviQ-psHMGxwbxus7QZmc1YfP446xKVxqySqaUVns3t3MnxYLFtD7D");
+
         /**
          * ask for the dangerous permission of adding accounts
          */
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
             /**
              * permission not granted, thus request again for the permissions
@@ -137,14 +144,16 @@ public class ResponseActivity extends AppCompatActivity implements
                     state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+
                             if (ex == null) {
                                 token = accessToken;
-                                //responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
+
+                                responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
                                 //Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
                                 //serviceIntent.putExtra("token", accessToken);
                                 //startService(serviceIntent);
-                                //responsePresenter.getOfflineMessages();
-                                //responsePresenter.performTokenRequest(null, accessToken);
+                                responsePresenter.getOfflineMessages();
+                                responsePresenter.performTokenRequest(null, accessToken);
                             } else {
                                 Log.e("auth token exception", ex.toString());
                             }
@@ -221,13 +230,13 @@ public class ResponseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSenderNameInitialClick(int row, int column, int isExpanded) {
+    public void onSenderNameInitialClick(int day, int row, int column, int isExpanded) {
 
         ArrayList<Integer> ids = new ArrayList<>();
-        int layoutId = Integer.parseInt("1" + Integer.toString(row));
+        int layoutId = Integer.parseInt("1" + Integer.toString(day) + Integer.toString(row));
         for (int m = 1; m <= 4; m++) {
             if (m != column)
-                ids.add(Integer.parseInt("2" + Integer.toString(row) + Integer.toString(m)));
+                ids.add(Integer.parseInt("2" + Integer.toString(day) +Integer.toString(row) + Integer.toString(m)));
         }
         if (isExpanded == 1) {
             for (int id : ids) {
@@ -276,9 +285,9 @@ public class ResponseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, RecyclerView recyclerView) {
+    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int day, int i, int j, RecyclerView recyclerView) {
 
-        emailTilesAdapter = new EmailTilesAdapter(this, this, this, list, i + 1, j + 1);
+        emailTilesAdapter = new EmailTilesAdapter(this, this, this, list, day, i + 1, j + 1);
         recyclerView.setAdapter(emailTilesAdapter);
     }
 
@@ -305,6 +314,13 @@ public class ResponseActivity extends AppCompatActivity implements
         Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
         serviceIntent.putExtra("token", accessToken);
         //        startService(serviceIntent);
+    }
+
+    @Override
+    public void appendLinearLayout(int linearLayoutId) {
+        LinearLayout layout = (LinearLayout) findViewById(linearLayoutId);
+        if (layout != null)
+            linearLayout.addView(layout);
     }
 
     @Override
@@ -389,5 +405,15 @@ public class ResponseActivity extends AppCompatActivity implements
                 break;
         }
         return true;
+    }
+
+    /**
+     * get saved preferences including lastSyncMessageId which gives the id of the
+     * last synchronized message
+     */
+    public void getSavedPreferences() {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isAutoDownloadAttachment = preferences.getBoolean("auto_download_attachment", false);
+        lastSyncMessageId = preferences.getString("last_sync_message_id", null);
     }
 }
