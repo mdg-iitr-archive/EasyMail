@@ -38,7 +38,6 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.services.MessagesPullService;
 import com.example.android.easymail.view.ResponseActivityView;
-import com.example.android.easymail.views.ExpandableGridView;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -59,7 +58,6 @@ public class ResponseActivity extends AppCompatActivity implements
     private LinearLayout linearLayout;
     private RecyclerView emailNameInitialRecycler;
     private EmailTilesAdapter emailTilesAdapter;
-    private ExpandableGridView emailNameInitialGridView;
     private EmailGridViewAdapter emailGridViewAdapter;
     private ResponsePresenterImpl responsePresenter;
     private ProgressDialog dialog;
@@ -98,8 +96,6 @@ public class ResponseActivity extends AppCompatActivity implements
 
         accountManager = AccountManager.get(this);
         responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
-        //responsePresenter.getOfflineMessages();
-        //responsePresenter.performTokenRequest(null, "ya29.GluEBHV-rj_vGObwrHd0p9oeto0yvKWtPhRDx7R1NxcGhhdsCPJmlPuKWfYba3t2R1ZG4nRviQ-psHMGxwbxus7QZmc1YfP446xKVxqySqaUVns3t3MnxYLFtD7D");
 
         /**
          * ask for the dangerous permission of adding accounts
@@ -149,9 +145,6 @@ public class ResponseActivity extends AppCompatActivity implements
                                 token = accessToken;
 
                                 responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
-                                //Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
-                                //serviceIntent.putExtra("token", accessToken);
-                                //startService(serviceIntent);
                                 responsePresenter.getOfflineMessages();
                                 responsePresenter.performTokenRequest(null, accessToken);
                             } else {
@@ -293,6 +286,7 @@ public class ResponseActivity extends AppCompatActivity implements
 
     @Override
     public void addLinearLayoutToDisplay(LinearLayout currentLinearLayout) {
+
         linearLayout.addView(currentLinearLayout);
     }
 
@@ -328,10 +322,6 @@ public class ResponseActivity extends AppCompatActivity implements
 
         message = child;
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
-        realm = Realm.getInstance(configuration);
-        realm.beginTransaction();
-        realm.copyToRealmOrUpdate(message);
-        realm.commitTransaction();
         drawerLayout.openDrawer(GravityCompat.END);
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
     }

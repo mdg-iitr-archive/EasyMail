@@ -95,17 +95,13 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
         Realm.init(context);
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
-
-        //RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
-        //currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
-        //formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
-
+        this.callback = callback;
+        // classifyMessages(0, 0, 7);
     }
 
     @Override
     public void performMesssageRequestTask(final ResponseInteractor.PresenterCallback callback, String accessToken, final AuthorizationResponse response, AuthorizationService service){
 
-        this.callback = callback;
         GoogleCredential googleCredential = new GoogleCredential().setAccessToken(accessToken);
         if (accessToken != null){
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
@@ -174,7 +170,6 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
 
         i.putExtra("receiverTag", this);
         i.putExtra("token", token);
-        //offlineMessages();
         context.startService(i);
 /*
         Thread thread = new Thread(new Runnable() {
@@ -312,8 +307,6 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
                             }
                             currentDayMessageSendersRealmList.add(new CurrentDayMessageSendersRealmList(hashTable.keys[i], modifiedList));
                         }
-
-
                     }
 
                 }}
@@ -361,6 +354,8 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
 
         } else {
             int count = (int) resultData.get("days_between");
+            classifyMessages(count, lastCount, count);
+            /*
             RealmResults<Sender> senderRealmResults = realm.where(Sender.class).findAll();
             List<Sender> senders = realm.copyFromRealm(senderRealmResults);
             int limit = count;
@@ -377,6 +372,7 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
                 /*
                 callback.formLinearLayout(linearLayoutId);
                 */
+                /*
                 for (int j = 0; j < senders.size(); j++) {
 
                     RealmResults<Message> realmResults = realm.where(Message.class).equalTo("sender", senders.get(j).getName()).findAll();
@@ -441,14 +437,16 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
                 for (int m = 0; m < layoutCount; m++) {
                     callback.addDayLinearLayout(Integer.parseInt("1" + Integer.toString(i + 1) + Integer.toString(m + 1)));
                 }
-                */
+                /
                 }
                 formGridView(i + 1, currentDayList);
             }
+        */
         }
     }
 
     private void offlineMessages(){
+
         RealmResults<Sender> senderRealmResults = realm.where(Sender.class).findAll();
         List<Sender> senders = realm.copyFromRealm(senderRealmResults);
         for (int i = lastCount; i < 1; i++) {
@@ -522,6 +520,93 @@ public class ResponseInteractorImpl extends ResultReceiver implements ResponseIn
                 callback.addDayLinearLayout(Integer.parseInt("1" + Integer.toString(i + 1) + Integer.toString(m + 1)));
             }
             */
+        }
+    }
+
+    private void classifyMessages(int count, int from, int to){
+
+        RealmResults<Sender> senderRealmResults = realm.where(Sender.class).findAll();
+        List<Sender> senders = realm.copyFromRealm(senderRealmResults);
+
+        for (int i = from; i < to; i++) {
+
+            lastCount = count;
+                /*
+                int layoutCount = 1;
+                int layoutMessagesCount = 0;
+                int linearLayoutId = Integer.parseInt("1" + Integer.toString(i + 1) + Integer.toString(layoutCount));
+                */
+            List<CurrentDayMessageSendersRealmList> currentDayList = new ArrayList<>();
+                /*
+                callback.formLinearLayout(linearLayoutId);
+                */
+            for (int j = 0; j < senders.size(); j++) {
+
+                RealmResults<Message> realmResults = realm.where(Message.class).equalTo("sender", senders.get(j).getName()).findAll();
+                List<Message> messages = realm.copyFromRealm(realmResults);
+                RealmList<Message> list = new RealmList<>();
+
+                for (int k = 0; k < messages.size(); k++) {
+
+                    String date = null;
+                    for (MessageHeader header : messages.get(k).getPayload().getHeaders()){
+                        if(header.getName().equals("Date"))
+                            date = header.getValue().split(",")[1];
+                    }String[] words = date.split("\\s");
+
+                    SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
+                    String day = dayFormat.format(Calendar.getInstance().getTime());
+
+                    SimpleDateFormat monthFormat = new SimpleDateFormat("MMM");
+                    String month = monthFormat.format(Calendar.getInstance().getTime());
+
+                    SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+                    String year = yearFormat.format(Calendar.getInstance().getTime());
+
+                    Calendar currentDate = Calendar.getInstance();
+                    currentDate.set(Integer.parseInt(year), getMonthNo(month), Integer.parseInt(day), 0, 0);
+                    Calendar messageDate = Calendar.getInstance();
+                    messageDate.set(Integer.parseInt(words[3]), getMonthNo(words[2]), Integer.parseInt(words[1]), 0, 0);
+
+                    if (calendarDaysBetween(currentDate, messageDate) == i) {
+                        list.add(messages.get(k));
+                    }
+                }
+                if (list.size() != 0)
+                    currentDayList.add(new CurrentDayMessageSendersRealmList(senders.get(j).getName(), list));
+
+                    /*
+                    if (layoutMessagesCount == 4) {
+                        /**
+                         * form a linear layout with below linear layout id
+                         /
+                        linearLayoutId = Integer.parseInt("1" + Integer.toString(i + 1) + layoutCount + 1);
+                        callback.formLinearLayout(linearLayoutId);
+                        layoutCount = layoutCount + 1;
+                        layoutMessagesCount = layoutMessagesCount - 4;
+                    }
+
+                    if (list.size() != 0) {
+
+                        List<CurrentDayMessageSendersRealmList> senderList = new ArrayList<>();
+                        senderList.add(new CurrentDayMessageSendersRealmList(senders.get(j).getName(), list));
+                        recyclerViewId = Integer.parseInt("2" + Integer.toString(i + 1) + Integer.toString(layoutCount) + Integer.toString(++layoutMessagesCount));
+                        /**
+                         * form a recycler view and append it to layout.
+                         /
+                        callback.formRecyclerView(senderList, i + 1, layoutCount, layoutMessagesCount, recyclerViewId);
+                    }
+                }
+                /**
+                 * finally make a linear layout and append all the above layouts to it
+                 * and append this new layout to activity layout.
+                 /
+                for (int m = 0; m < layoutCount; m++) {
+                    callback.addDayLinearLayout(Integer.parseInt("1" + Integer.toString(i + 1) + Integer.toString(m + 1)));
+                }
+                */
+            }
+            formGridView(i + 1, currentDayList);
         }
     }
 
