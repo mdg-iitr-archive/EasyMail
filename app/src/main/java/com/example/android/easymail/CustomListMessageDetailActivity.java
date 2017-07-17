@@ -4,13 +4,14 @@ import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.icu.util.Calendar;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.Time;
+
+import java.util.Calendar;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -32,11 +33,33 @@ public class CustomListMessageDetailActivity extends AppCompatActivity {
 
         // get the first message with the id obtained
         // from the intent.
-        RealmResults<Message> messageResult = realm.where(Message.class).equalTo("id", (String) getIntent().getExtras().get("id")).findAll();
+        RealmResults<Message> messageResult = realm.where(Message.class).equalTo("id", (String) getIntent().getExtras().get("messageId")).findAll();
         message = realm.copyFromRealm(messageResult).get(0);
 
+        boolean isNotifEnabled = message.getCustomListDetails().isNotifEnabled();
         // configure the alarm for the action.
-        setAlarmService(message.getCustomListDetails().getTime());
+        if (isNotifEnabled) setNotificationService(message.getCustomListDetails().getTime());
+
+        boolean isAlarmEnabled = message.getCustomListDetails().isAlarmEnabled();
+        // configure the alarm for the action.
+        if (isAlarmEnabled) setAlarmService(message.getCustomListDetails().getTime());
+    }
+
+    /**
+     * start notifiaction service
+     * @param time Used to get the time of triggering of notifiaction
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    private void setNotificationService(Time time) {
+
+        Intent notifReceiverIntent = new Intent(this, NotificationReceiver.class);
+        notifReceiverIntent.putExtra("id", message.getId());
+        notifReceiverIntent.putExtra("notif_id", 1000);
+        PendingIntent notifPendingIntent = PendingIntent.getBroadcast(this, 0, notifReceiverIntent, 0);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(time.getYear(), time.getMonth(), time.getDayOfMonth(), time.getHourOfDay(), time.getMinute());
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), notifPendingIntent);
     }
 
     /**
@@ -44,12 +67,12 @@ public class CustomListMessageDetailActivity extends AppCompatActivity {
      * @param time Used to get the time of triggering of alarm
      */
     @TargetApi(Build.VERSION_CODES.N)
-    private void setAlarmService(Time time) {
+    public void setAlarmService(Time time) {
 
-        Intent alarmServiceIntent = new Intent(this, AlarmReceiver.class);
-        alarmServiceIntent.putExtra("id", message.getId());
-        alarmServiceIntent.putExtra("notif_id", 1000);
-        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(this, 0, alarmServiceIntent, 0);
+        Intent alarmReceiverIntent = new Intent(this, AlarmReceiver.class);
+        alarmReceiverIntent.putExtra("id", message.getId());
+        alarmReceiverIntent.putExtra("alarm_id", 1000);
+        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(this, 0, alarmReceiverIntent, 0);
         Calendar calendar = Calendar.getInstance();
         calendar.set(time.getYear(), time.getMonth(), time.getDayOfMonth(), time.getHourOfDay(), time.getMinute());
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
