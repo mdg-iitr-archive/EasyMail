@@ -5,8 +5,13 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.EventLogTags;
 import android.util.Log;
 
+import com.example.android.easymail.adapters.SelectedSenderMessagesAdapter;
+import com.example.android.easymail.interfaces.SelectedSenderMessageClickListener;
 import com.sun.mail.imap.IMAPFolder;
 
 import java.io.BufferedOutputStream;
@@ -16,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -35,11 +42,14 @@ import javax.mail.search.FromTerm;
 import javax.mail.search.SearchTerm;
 
 
-public class SelectedSenderMessages extends AppCompatActivity {
+public class SelectedSenderMessages extends AppCompatActivity implements SelectedSenderMessageClickListener{
 
 
     private String address;
     private List<MimeMessage> mimeMessageList;
+    private Message[] messages;
+    private RecyclerView senderMessagesRecyclerView;
+    private SelectedSenderMessagesAdapter selectedSenderMessagesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,45 +58,31 @@ public class SelectedSenderMessages extends AppCompatActivity {
 
         address = (String) getIntent().getExtras().get("address");
         try {
-
             new RequestSenderMessages().execute();
-            //create properties field
-            /*
-            Properties props = System.getProperties();
-            props.setProperty("mail.store.protocol", "imaps");
-
-            Session session = Session.getDefaultInstance(props, null);
-
-            Store store = session.getStore("imaps");
-            store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "harshit1206");
-
-            //IMAPFolder folder = (IMAPFolder) store.getFolder("inbox"); // This doesn't work for other email account
-            IMAPFolder folder = (IMAPFolder) store.getFolder("inbox"); // This does work for other email account
-            //folder = (IMAPFolder) store.getFolder("inbox");
-
-            if(!folder.isOpen())
-                folder.open(Folder.READ_WRITE);
-
-            SearchTerm sender = new FromTerm(new InternetAddress(address));
-            javax.mail.Message[] messages = folder.getMessages();
-            System.out.println("No of Messages : " + folder.getMessageCount());
-            System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
-            System.out.println(messages.length);
-            efficientGetContents(folder, messages);
-            folder.close(false);
-            store.close();
-*/
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initViews() {
+        senderMessagesRecyclerView = (RecyclerView) findViewById(R.id.selected_sender_mail_recycler);
+        senderMessagesRecyclerView.setLayoutManager(new LinearLayoutManager(SelectedSenderMessages.this));
+        selectedSenderMessagesAdapter = new SelectedSenderMessagesAdapter
+                (SelectedSenderMessages.this, new ArrayList<>(Arrays.asList(messages)), this);
+    }
+
+    private void setRecyclerAdapter() {
+        senderMessagesRecyclerView.setAdapter(selectedSenderMessagesAdapter);
     }
 
     public int efficientGetContents(IMAPFolder inbox, Message[] messages) throws MessagingException {
 
         FetchProfile profile = new FetchProfile();
         profile.add(FetchProfile.Item.ENVELOPE);
-        profile.add("Sender");
+        // profile.add("Sender");
         inbox.fetch(messages, profile);
+        int nbMessages = messages.length;
+        /*
         // total number of messages to be retrieved
         int nbMessages = messages.length;
         // to keep track of total messages retrieved
@@ -122,6 +118,13 @@ public class SelectedSenderMessages extends AppCompatActivity {
             Log.i("Size fetched = ", Integer.toString(totalSize));
         }
         return nbMessages;
+        */
+        return 0;
+    }
+
+    @Override
+    public void onSenderMessageClicked(Message message) {
+
     }
 
     public class RequestSenderMessages extends AsyncTask<Void, Void, Void> {
@@ -156,7 +159,7 @@ public class SelectedSenderMessages extends AppCompatActivity {
                     folder.open(Folder.READ_WRITE);
 
                 SearchTerm sender = new FromTerm(new InternetAddress(address));
-                javax.mail.Message[] messages = folder.search(sender);
+                messages = folder.search(sender);
                 System.out.println("No of Messages : " + folder.getMessageCount());
                 System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
                 System.out.println(messages.length);
@@ -173,6 +176,9 @@ public class SelectedSenderMessages extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
+            initViews();
+            setRecyclerAdapter();
+            /*
             for (int i = 0; i < mimeMessageList.size(); i++) {
                 MimeMessage message = mimeMessageList.get(i);
                 System.out.println("---------------------------------");
@@ -182,8 +188,8 @@ public class SelectedSenderMessages extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
+            */
         }
-
     }
 
     /*
@@ -203,6 +209,12 @@ public class SelectedSenderMessages extends AppCompatActivity {
         //check if the content is plain text
         if (p.isMimeType("text/plain")) {
             Log.i("Mime Type: ", "This is plain text");
+            Log.i(" ", "---------------------------");
+            String content = (String) p.getContent();
+            Log.i("Content", (String) p.getContent());
+        }
+        else if (p.isMimeType("text/html")){
+            Log.i("Mime Type: ", "This is html text");
             Log.i(" ", "---------------------------");
             String content = (String) p.getContent();
             Log.i("Content", (String) p.getContent());
