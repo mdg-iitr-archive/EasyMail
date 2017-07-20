@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.EventLogTags;
 import android.util.Log;
 
 import com.example.android.easymail.adapters.SelectedSenderMessagesAdapter;
@@ -17,7 +16,6 @@ import com.sun.mail.imap.IMAPFolder;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,7 @@ import javax.mail.search.FromTerm;
 import javax.mail.search.SearchTerm;
 
 
-public class SelectedSenderMessages extends AppCompatActivity implements SelectedSenderMessageClickListener{
+public class SelectedSenderMessagesActivity extends AppCompatActivity implements SelectedSenderMessageClickListener{
 
 
     private String address;
@@ -66,9 +64,9 @@ public class SelectedSenderMessages extends AppCompatActivity implements Selecte
 
     private void initViews() {
         senderMessagesRecyclerView = (RecyclerView) findViewById(R.id.selected_sender_mail_recycler);
-        senderMessagesRecyclerView.setLayoutManager(new LinearLayoutManager(SelectedSenderMessages.this));
+        senderMessagesRecyclerView.setLayoutManager(new LinearLayoutManager(SelectedSenderMessagesActivity.this));
         selectedSenderMessagesAdapter = new SelectedSenderMessagesAdapter
-                (SelectedSenderMessages.this, new ArrayList<>(Arrays.asList(messages)), this);
+                (SelectedSenderMessagesActivity.this, new ArrayList<>(Arrays.asList(messages)), this);
     }
 
     private void setRecyclerAdapter() {
@@ -134,7 +132,7 @@ public class SelectedSenderMessages extends AppCompatActivity implements Selecte
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            dialog = new ProgressDialog(SelectedSenderMessages.this);
+            dialog = new ProgressDialog(SelectedSenderMessagesActivity.this);
             dialog.setMessage("Retrieving Messages...");
             dialog.show();
         }

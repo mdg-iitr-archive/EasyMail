@@ -9,10 +9,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
-import com.example.android.easymail.Constants;
+import com.example.android.easymail.utils.Constants;
 import com.example.android.easymail.CustomListMessageDetailActivity;
 import com.example.android.easymail.R;
-import com.example.android.easymail.ResponseActivity;
 import com.example.android.easymail.models.Message;
 
 import io.realm.Realm;

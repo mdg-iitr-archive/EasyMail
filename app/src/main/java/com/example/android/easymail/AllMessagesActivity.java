@@ -8,9 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
-import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.media.MediaBrowserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,7 +25,8 @@ import com.example.android.easymail.interfaces.MailClassifierSenderClickListener
 import com.example.android.easymail.interfaces.MailClassifierSenderLongClickListener;
 import com.example.android.easymail.models.MailClassifierSender;
 import com.example.android.easymail.services.MessagesPullService;
-import com.sun.mail.imap.IMAPFolder;
+import com.example.android.easymail.utils.Constants;
+import com.example.android.easymail.utils.MessageCountComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +40,6 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
@@ -126,7 +124,7 @@ public class AllMessagesActivity extends AppCompatActivity implements MailClassi
         if (isMultiSelect) multiSelect(position);
         else {
             String address = addressMap.get(sender);
-            Intent selectedSenderMessagesIntent = new Intent(AllMessagesActivity.this, SelectedSenderMessages.class);
+            Intent selectedSenderMessagesIntent = new Intent(AllMessagesActivity.this, SelectedSenderMessagesActivity.class);
             selectedSenderMessagesIntent.putExtra("address", address);
             startActivity(selectedSenderMessagesIntent);
         }

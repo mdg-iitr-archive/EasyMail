@@ -16,6 +16,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.example.android.easymail.models.Message;
+import com.example.android.easymail.utils.AlarmReceiver;
 
 import java.io.IOException;
 import java.util.Calendar;

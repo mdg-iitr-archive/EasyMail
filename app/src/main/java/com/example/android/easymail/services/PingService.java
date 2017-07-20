@@ -10,8 +10,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.example.android.easymail.NotificationReceiver;
-import com.example.android.easymail.Constants;
+import com.example.android.easymail.utils.NotificationReceiver;
+import com.example.android.easymail.utils.Constants;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.Time;
 

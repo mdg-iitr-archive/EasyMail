@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
+
+import com.example.android.easymail.EditMessageActivity;
 
 import java.util.Calendar;
 

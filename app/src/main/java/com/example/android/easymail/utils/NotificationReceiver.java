@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
