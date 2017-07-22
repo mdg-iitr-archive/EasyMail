@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
@@ -37,6 +36,7 @@ import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.services.MessagesPullService;
+import com.example.android.easymail.utils.Constants;
 import com.example.android.easymail.view.ResponseActivityView;
 
 import net.openid.appauth.AuthState;
@@ -335,6 +335,7 @@ public class ResponseActivity extends AppCompatActivity implements
         Intent customListMessagesIntent = new Intent(ResponseActivity.this, CustomListMessagesActivity.class);
         Intent mailClassifierIntent = new Intent(ResponseActivity.this, AllMessagesActivity.class);
         Intent searchByDateIntent = new Intent(ResponseActivity.this, SearchByDateActivity.class);
+        Intent allAttachmentsIntent = new Intent(ResponseActivity.this, AllAttachmentsActivity.class);
         Intent settingsIntent =  new Intent(ResponseActivity.this, SettingsActivity.class);
 
         switch (item.getItemId()){
@@ -364,6 +365,9 @@ public class ResponseActivity extends AppCompatActivity implements
             case R.id.left_nav_search_by_date:
                 searchByDateIntent.putExtra("token", token);
                 startActivity(searchByDateIntent);
+                break;
+            case R.id.left_nav_attachments:
+                startActivity(allAttachmentsIntent);
                 break;
             case R.id.left_nav_settings:
                 startActivity(settingsIntent);
