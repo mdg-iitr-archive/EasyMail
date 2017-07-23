@@ -7,5 +7,5 @@ import javax.mail.Message;
  */
 
 public interface SelectedSenderMessageClickListener  {
-    void onSenderMessageClicked(Message message);
+    void onSenderMessageClicked(int position);
 }

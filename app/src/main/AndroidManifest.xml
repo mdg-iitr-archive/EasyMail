@@ -98,7 +98,8 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity android:name=".AlarmReceiverActivity" />
-        <activity android:name=".AllAttachmentsActivity"></activity>
+        <activity android:name=".AllAttachmentsActivity" />
+        <activity android:name=".DisplayMessageActivity"></activity>
     </application>
 
 </manifest>

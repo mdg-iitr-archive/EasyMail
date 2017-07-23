@@ -44,7 +44,7 @@ public class SelectedSenderMessagesAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(SelectedSenderMessagesViewHolder holder, int position) {
+    public void onBindViewHolder(SelectedSenderMessagesViewHolder holder, final int position) {
 
         final Message mimeMessage = mimeMessageList.get(position);
         try{
@@ -53,7 +53,7 @@ public class SelectedSenderMessagesAdapter extends
             holder.senderMessageLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onSenderMessageClicked(mimeMessage);
+                    listener.onSenderMessageClicked(position);
                 }
             });
         }catch (Exception e){
