@@ -154,7 +154,7 @@ public class AttachmentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         private TextView size, fileName, time, sender, subject;
         private ImageView icon, download;
 
-        public AttachmentViewHolder(View itemView) {
+        private AttachmentViewHolder(View itemView) {
             super(itemView);
             layout = (RelativeLayout) itemView.findViewById(R.id.attachment_layout);
             size =  (TextView) itemView.findViewById(R.id.attachment_size);

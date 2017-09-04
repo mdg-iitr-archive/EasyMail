@@ -47,11 +47,11 @@ public class CustomListMessagesAdapter extends RecyclerView.Adapter<CustomListMe
         return messageList.size();
     }
 
-    public class CustomListMessageViewHolder extends RecyclerView.ViewHolder{
+    public class CustomListMessageViewHolder extends RecyclerView.ViewHolder {
 
         private TextView subject, notes, alarm, notif;
 
-        public CustomListMessageViewHolder(View itemView) {
+        private CustomListMessageViewHolder(View itemView) {
             super(itemView);
             subject = (TextView) itemView.findViewById(R.id.custom_list_message_subject);
             notes = (TextView) itemView.findViewById(R.id.custom_list_message_notes);

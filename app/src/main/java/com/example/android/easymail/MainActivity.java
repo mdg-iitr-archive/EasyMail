@@ -99,7 +99,7 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
                         @Override
                         public void onTokenRequestCompleted(TokenResponse resp, AuthorizationException ex) {
                             if (resp != null) {
-                                //exchange succeeded\\
+                                //exchange succeeded
                                 final String accountType = Constants.ACCOUNT_TYPE;
                                 AuthState state = new AuthState(response, resp, ex);
                                 String deserializedAuthState = state.jsonSerializeString();
@@ -115,9 +115,9 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
                                 accountManager.setAuthToken(account, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, deserializedAuthState);
                                 setAccountAuthenticatorResult(res.getExtras());
                                 setResult(RESULT_OK, res);
-                                finish();
                                 Intent i = new Intent(MainActivity.this, ResponseActivity.class);
                                 startActivity(i);
+                                finish();
                             }
                         }
                     });

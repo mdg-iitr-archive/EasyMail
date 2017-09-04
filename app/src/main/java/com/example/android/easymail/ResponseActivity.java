@@ -27,7 +27,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.interactor.ResponseInteractorImpl;
 import com.example.android.easymail.interfaces.CurrentDayMessageClickListener;
@@ -50,24 +49,21 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import com.example.android.easymail.models.Message;
+
 public class ResponseActivity extends AppCompatActivity implements
         SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
         NavigationView.OnNavigationItemSelectedListener {
 
-    Context context = this;
+    private Context context = this;
     private LinearLayout linearLayout;
-    private RecyclerView emailNameInitialRecycler;
     private EmailTilesAdapter emailTilesAdapter;
-    private EmailGridViewAdapter emailGridViewAdapter;
     private ResponsePresenterImpl responsePresenter;
     private ProgressDialog dialog;
     private DrawerLayout drawerLayout;
     private com.example.android.easymail.models.Message message;
     private NavigationView leftNavigationView, rightNavigationView;
-    List<CurrentDayMessageSendersList> list;
-    AccountManager accountManager;
+    private AccountManager accountManager;
     private SharedPreferences preferences;
-    private Realm realm;
     private boolean isAutoDownloadAttachment;
     private static final int GET_ACCOUNTS_PERMISSION = 100;
     // Content provider authority
@@ -94,59 +90,38 @@ public class ResponseActivity extends AppCompatActivity implements
         regListeners();
         getSavedPreferences();
 
-        accountManager = AccountManager.get(this);
-        responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
-
-        /**
-         * ask for the dangerous permission of adding accounts
-         */
-
+        // ask for the dangerous permission of adding accounts
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-            /**
-             * permission not granted, thus request again for the permissions
-             */
+            // permission not granted, thus request again for the permissions
             ActivityCompat.requestPermissions(ResponseActivity.this,
                     new String[]{Manifest.permission.GET_ACCOUNTS},
                     GET_ACCOUNTS_PERMISSION);
         } else {
-            /**
-             * permission granted
-             * acquire the list of accounts from account manager
-             */
+            // permission granted,
+            // acquire the list of accounts from account manager
             final Account accountList[] = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
             if (accountList.length == 0) {
-                /**
-                 * if no account is present, then add a new account
-                 */
+                // no account is present, thus add a new account
                 accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
                         , null, this, null, null);
             } else {
-                /**
-                 * account is present, thus get the deserialized auth state
-                 */
+                // first get the offline available messages
+                responsePresenter.getOfflineMessages();
+                // account is present, thus get the deserialized auth state
                 ACCOUNT =  accountList[0];
                 final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(accountList[0], Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
                 try {
-
                     Bundle bnd = future.getResult();
                     final String deserializedAuthState = bnd.getString(AccountManager.KEY_AUTHTOKEN);
                     AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
                     AuthorizationService service = new AuthorizationService(context);
-                    final ResponseActivityView instance = this;
-
-                    /**
-                     * obtain the fresh access token from the auth state
-                     */
+                    // obtain the fresh access token from the auth state
                     state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-
                             if (ex == null) {
                                 token = accessToken;
-
-                                responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
-                                responsePresenter.getOfflineMessages();
-                                responsePresenter.performTokenRequest(null, accessToken);
+                                responsePresenter.performTokenRequest(null, token);
                             } else {
                                 Log.e("auth token exception", ex.toString());
                             }
@@ -155,11 +130,14 @@ public class ResponseActivity extends AppCompatActivity implements
                     Log.d("easymail", "GetToken Bundle is " + bnd);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    accountManager.removeAccount(ACCOUNT,  this, null, null);
+                    accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
+                            , null, this, null, null);
                 }
             }
         }
         mResolver = getContentResolver();
-        mResolver.addPeriodicSync(ACCOUNT, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL);
+        // mResolver.addPeriodicSync(ACCOUNT, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL);
     }
 
     @Override
@@ -168,37 +146,33 @@ public class ResponseActivity extends AppCompatActivity implements
         switch(requestCode){
             case GET_ACCOUNTS_PERMISSION:
                 if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-
                     final Account accountList[] = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
-
                 }
+                break;
         }
     }
 
+    /**
+     * initialise the views of the layout
+     */
     private void initViews(){
 
-        /**
-         * initialise the views of the layout
-         */
         linearLayout = (LinearLayout) findViewById(R.id.layout);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         leftNavigationView = (NavigationView) findViewById(R.id.left_drawer);
         rightNavigationView = (NavigationView) findViewById(R.id.right_drawer);
+        accountManager = AccountManager.get(this);
+        responsePresenter = new ResponsePresenterImpl
+                (this, new ResponseInteractorImpl(new Handler()), ResponseActivity.this, getApplication());
 
-        /**
-         * set the listeners for the left and right navigation views
-         */
+        //set the listeners for the left and right navigation views
         leftNavigationView.setNavigationItemSelectedListener(this);
         rightNavigationView.setNavigationItemSelectedListener(this);
 
-        /**
-         * restrict the swiping of the right drawer
-         */
+        //restrict the swiping of the right drawer
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
 
-        /**
-         * restrict the swiping of the right drawer on closing of right drawer
-         */
+        //restrict the swiping of the right drawer on closing of left or right drawer
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -307,7 +281,7 @@ public class ResponseActivity extends AppCompatActivity implements
 
         Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
         serviceIntent.putExtra("token", accessToken);
-        //        startService(serviceIntent);
+        //startService(serviceIntent);
     }
 
     @Override
@@ -328,9 +302,7 @@ public class ResponseActivity extends AppCompatActivity implements
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        /**
-         * Make different intents for different click events
-         */
+        // Make different intents for different click events
         Intent editMessageIntent = new Intent(ResponseActivity.this, EditMessageActivity.class);
         Intent customListMessagesIntent = new Intent(ResponseActivity.this, CustomListMessagesActivity.class);
         Intent mailClassifierIntent = new Intent(ResponseActivity.this, AllMessagesActivity.class);
@@ -339,9 +311,7 @@ public class ResponseActivity extends AppCompatActivity implements
         Intent settingsIntent =  new Intent(ResponseActivity.this, SettingsActivity.class);
 
         switch (item.getItemId()){
-            /**
-             * On click for left navigation view
-             */
+            // On click for left navigation view
             case R.id.left_nav_to_do:
                 editMessageIntent.putExtra("listName", "To-Do");
                 startActivity(customListMessagesIntent);
@@ -372,9 +342,7 @@ public class ResponseActivity extends AppCompatActivity implements
             case R.id.left_nav_settings:
                 startActivity(settingsIntent);
                 break;
-            /**
-             * On click for right navigation view
-             */
+            // On click for right navigation view
             case R.id.right_nav_to_do:
                 editMessageIntent.putExtra("listName", "To-Do");
                 editMessageIntent.putExtra("messageId", message.getId());
@@ -388,8 +356,6 @@ public class ResponseActivity extends AppCompatActivity implements
             case R.id.right_nav_launch_events:
                 editMessageIntent.putExtra("listName", "Launch Events");
                 editMessageIntent.putExtra("messageId", message.getId());
-                RealmResults<Message> results = realm.where(com.example.android.easymail.models.Message.class).equalTo("id", message.getId()).findAll();
-                Message messages = realm.copyFromRealm(results).get(0);
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_business_events:
