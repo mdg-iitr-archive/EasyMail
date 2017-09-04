@@ -50,9 +50,10 @@ public class WeeklyMessagesService extends IntentService {
 
     List<Sender> senders = new ArrayList<>();
 
-    public WeeklyMessagesService(){
+    public WeeklyMessagesService() {
         super("");
     }
+
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
@@ -78,7 +79,7 @@ public class WeeklyMessagesService extends IntentService {
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-        final com.google.api.services.gmail.Gmail  service = new com.google.api.services.gmail.Gmail.Builder(
+        final com.google.api.services.gmail.Gmail service = new com.google.api.services.gmail.Gmail.Builder(
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
         String user = "harshit.bansalec@gmail.com";
@@ -88,15 +89,10 @@ public class WeeklyMessagesService extends IntentService {
         if (mostRecentMessageId == null) {
 
             boolean isCompleted = false;
-
-            /**
-             * the below task is only to update the mostRecentMessageId
-             */
+            // the below task is only to update the mostRecentMessageId
             try {
                 mostRecentMessageId = service.users().messages().list(user).execute().getMessages().get(0).getId();
-                /**
-                 * save mostRecentMessageId into shared preferences
-                 */
+                // save mostRecentMessageId into shared preferences
                 Bundle bundle = new Bundle();
                 bundle.putString("most_recent_message_id", mostRecentMessageId);
                 rec.send(1, bundle);
@@ -107,7 +103,6 @@ public class WeeklyMessagesService extends IntentService {
             String nextPageToken = null;
 
             while (!isCompleted) {
-
                 try {
                     listMessagesResponse = service.users().messages().list(user).setPageToken(nextPageToken).execute();
                     nextPageToken = listMessagesResponse.getNextPageToken();
@@ -123,7 +118,7 @@ public class WeeklyMessagesService extends IntentService {
                         try {
                             String pageLastId = listMessagesResponse.getMessages().get(i).getId();
                             Message message = service.users().messages().get(user, pageLastId).execute();
-                            String date = message.getPayload().getHeaders().get(2).getValue().split(",")[1];
+                            String date = message.getPayload().getHeaders().get(1).getValue().split(",")[1];
                             String[] words = date.split("\\s");
 
                             SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
@@ -151,8 +146,7 @@ public class WeeklyMessagesService extends IntentService {
                     }
                 }
             }
-        }
-        else{
+        } else {
             try {
                 listMessagesResponse = service.users().messages().list(user).execute();
             } catch (IOException e) {
@@ -160,10 +154,8 @@ public class WeeklyMessagesService extends IntentService {
             }
 
             int i = 0;
-            while (!mostRecentMessageId.equals(listMessagesResponse.getMessages().get(i).getId())){
-                /**
-                 * add to the list till the two become equal updating the most recent message id
-                 */
+            while (!mostRecentMessageId.equals(listMessagesResponse.getMessages().get(i).getId())) {
+                // add to the list till the two become equal updating the most recent message id
                 day1.add(new MessageStatus(listMessagesResponse.getMessages().get(i).getId(), 0));
                 i = i + 1;
             }
@@ -189,10 +181,7 @@ public class WeeklyMessagesService extends IntentService {
             if (day1.get(i).getIsStored() == 0) {
 
                 String sender;
-
-                /**
-                 * download the message and check the date difference.
-                 */
+                // download the message and check the date difference.
                 String id = day1.get(i).getId();
                 Message message = null;
 
@@ -205,20 +194,17 @@ public class WeeklyMessagesService extends IntentService {
 
                     String date = null;
                     try {
-                        for (MessagePartHeader header: message.getPayload().getHeaders()){
-                            if(header.getName().equals("Date"))
+                        for (MessagePartHeader header : message.getPayload().getHeaders()) {
+                            if (header.getName().equals("Date"))
                                 date = header.getValue().split(",")[1];
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     String[] words = date.split("\\s");
-
-                    /**
-                     * check if date is older then a week from the present date
-                     * if so break the for loop and delete all the ids obtained till
-                     * then.
-                     */
+                    // check if date is older then a week from the present date
+                    // if so break the for loop and delete all the ids obtained till
+                    // then.
                     Calendar messageDate = Calendar.getInstance();
                     int monthNo = getMonthNo(words[2]);
                     messageDate.set(Integer.parseInt(words[3]), monthNo, Integer.parseInt(words[1]), 0, 0);
@@ -230,15 +216,11 @@ public class WeeklyMessagesService extends IntentService {
                     sevenDaysLater.add(Calendar.DATE, 7);
 
                     if (!sevenDaysLater.after(currentDate)) {
-                        /**
-                         * clear the entire sublist after this date
-                         */
+                        // clear the entire sublist after this date
                         day1.subList(i, day1.size()).clear();
-                        /**
-                         * make a callback to the activity that the
-                         * messages of the end day of the week have
-                         * been fetched.
-                         */
+                        // make a callback to the activity that the
+                        // messages of the end day of the week have
+                        // been fetched.
                         Bundle bundle = new Bundle();
                         bundle.putInt("days_between", 7);
                         rec.send(0, bundle);
@@ -324,14 +306,14 @@ public class WeeklyMessagesService extends IntentService {
      * Compute the number of calendar days between two Calendar objects.
      * The desired value is the number of days of the month between the
      * two Calendars, not the number of milliseconds' worth of days.
+     *
      * @param startCal The earlier calendar
-     * @param endCal The later calendar
+     * @param endCal   The later calendar
      * @return the number of calendar days of the month between startCal and endCal
      */
     public static long calendarDaysBetween(Calendar startCal, Calendar endCal) {
 
         // Create copies so we don't update the original calendars.
-
         Calendar start = Calendar.getInstance();
         start.setTimeZone(startCal.getTimeZone());
         start.setTimeInMillis(startCal.getTimeInMillis());
@@ -341,7 +323,6 @@ public class WeeklyMessagesService extends IntentService {
         end.setTimeInMillis(endCal.getTimeInMillis());
 
         // Set the copies to be at midnight, but keep the day information.
-
         start.set(Calendar.HOUR_OF_DAY, 0);
         start.set(Calendar.MINUTE, 0);
         start.set(Calendar.SECOND, 0);
@@ -355,14 +336,13 @@ public class WeeklyMessagesService extends IntentService {
         // At this point, each calendar is set to midnight on
         // their respective days. Now use TimeUnit.MILLISECONDS to
         // compute the number of full days between the two of them.
-
         long ans = TimeUnit.MILLISECONDS.toDays(
                 Math.abs(end.getTimeInMillis() - start.getTimeInMillis()));
         return ans;
     }
 
-    public int getMonthNo(String month){
-        switch (month){
+    public int getMonthNo(String month) {
+        switch (month) {
             case "Jan":
                 return 0;
             case "Feb":

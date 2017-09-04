@@ -40,24 +40,18 @@ public class PingService extends Service {
 
         String action = intent.getAction();
         if (action.equals(Constants.ACTION_DISMISS)) {
-            /**
-             * the user dismissed the action, so the work has been done
-             */
+            // the user dismissed the action, so the work has been done
         }
         else if (action.equals(Constants.ACTION_SNOOZE)){
-
             // get the id of the message from intent extra
             String messageId = (String) intent.getExtras().get("id");
             int notificationId = (int) intent.getExtras().get("notif_id");
-            /**
-             * the  user has chosen to snooze the notification
-             */
+            // the  user has chosen to snooze the notification
             // Gets an instance of the NotificationManager service
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             // Clear the existing notification
             notificationManager.cancel(notificationId);
-
             RealmConfiguration configuration = new RealmConfiguration.Builder().build();
             realm = Realm.getInstance(configuration);
             RealmResults<Message> results = realm.where(Message.class).equalTo("id", messageId).findAll();

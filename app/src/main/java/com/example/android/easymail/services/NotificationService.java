@@ -35,43 +35,30 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        /**
-         * get an instance of realm to find the subject
-         * of the message saved in the custom list.
-         */
+        // get an instance of realm to find the subject
+        // of the message saved in the custom list.
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
-
-        /**
-         * get the id of the message from the intent extra
-         * to get the message from realm db.
-         */
+        // get the id of the message from the intent extra
+        // to get the message from realm db.
         String messageId = (String) intent.getExtras().get("id");
         int notificationId = (int) intent.getExtras().get("notif_id");
-
-        /**
-         * get the appropriate message from realm results
-         */
+        // get the appropriate message from realm results
         RealmResults<Message> results = realm.where(Message.class).equalTo("id", messageId).findAll();
         message = realm.copyFromRealm(results).get(0);
-
-        /**
-         * call the method to create notification.
-         */
+        //call the method to create notification.
         createNotification(messageId, notificationId);
         return super.onStartCommand(intent, flags, startId);
     }
 
     /**
-     *  Used to create notification for the event.
+     * Used to create notification for the event.
      * @param messageId used to display the text message
      *                  in the big text view and pass it
      *                  as an extra in case of a button
      *                  click in the expanded view
      */
-    public void createNotification(String messageId, int notificationId){
-
+    public void createNotification(String messageId, int notificationId) {
         // Instantiate a Builder object.
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -98,7 +85,6 @@ public class NotificationService extends Service {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         builder.setContentIntent(resultPendingIntent);
-
         /*
          * Sets up the Snooze and Dismiss action buttons that will appear in the
          * big view of the notification.
@@ -114,7 +100,6 @@ public class NotificationService extends Service {
         snoozeIntent.putExtra("id", messageId);
         snoozeIntent.putExtra("notif_id", notificationId);
         PendingIntent piSnooze = PendingIntent.getService(this, 0, snoozeIntent, 0);
-
         /*
          * Sets the big view "big text" style and supplies the
          * text (the user's reminder message) that will be displayed
@@ -124,11 +109,10 @@ public class NotificationService extends Service {
          */
         builder.setStyle(new NotificationCompat.BigTextStyle()
                 .bigText(message.getCustomListDetails().getSubject()))
-                .addAction (R.drawable.ic_clear_black_24dp,
+                .addAction(R.drawable.ic_clear_black_24dp,
                         getString(R.string.dismiss), piDismiss)
-                .addAction (R.drawable.ic_hotel_black_24dp,
+                .addAction(R.drawable.ic_hotel_black_24dp,
                         getString(R.string.snooze), piSnooze);
-
         // Gets an instance of the NotificationManager service
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

@@ -5,5 +5,6 @@ package com.example.android.easymail.interfaces;
  */
 
 public interface MessageAttachmentClickListener {
+
     void onAttachmentClicked(int position);
 }
