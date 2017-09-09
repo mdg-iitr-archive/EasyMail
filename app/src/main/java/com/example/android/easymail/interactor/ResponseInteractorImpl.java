@@ -71,10 +71,11 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         Realm.init(context);
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
-
+/*
         RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
-        //currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
-        //formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
+        currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
+        formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
+        */
     }
 
     @Override
@@ -139,7 +140,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-        final com.google.api.services.gmail.Gmail service = new com.google.api.services.gmail.Gmail.Builder(
+        final com.google.api.services.gmail.Gmail  service = new com.google.api.services.gmail.Gmail.Builder(
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
 
@@ -248,6 +249,15 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                                     String filename = part.getFilename();
                                     parts.add(new MessagePart(partMimeType, partHeader,
                                             body, partId, filename));
+                                    if (filename != null && filename.length() > 0){
+                                        String attId = part.getBody().getAttachmentId();
+                                        try {
+                                            MessagePartBody attachPart = service.users().messages().attachments().
+                                                    get("harshit.bansalec@gmail.com", message.getId(), attId).execute();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
                                 }
                                 String file = message.getPayload().getFilename();
@@ -296,6 +306,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         });
         thread.start();
         thread.join();
+
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(currentDayMessageSendersRealmList);
         realm.copyToRealmOrUpdate(customCurrentDayMessages);

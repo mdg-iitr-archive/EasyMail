@@ -17,6 +17,7 @@ import android.widget.TimePicker;
 
 import com.example.android.easymail.models.CustomListDetails;
 import com.example.android.easymail.models.Message;
+import com.example.android.easymail.models.Time;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -34,6 +35,7 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
     private String listName;
     private Realm realm;
     private String subject_text, notes_text, date_text, time_text;
+    private int year, month, dayOfMonth, hourOfDay, minute;
     private boolean isAlarmEnabled, isNotifEnabled;
 
     @Override
@@ -84,6 +86,9 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
         String[] words = c.getTime().toString().split(" ");
         String setDate = words[0] + ", " + words[1] + " " + words[2] + ", " + Integer.toString(year);
         date.setText(setDate);
+        this.year = year;
+        this.month = month;
+        this.dayOfMonth = dayOfMonth;
     }
 
     @Override
@@ -93,6 +98,8 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
         hourOfDay = hourOfDay > 12 ? hourOfDay - 12 : hourOfDay;
         String setTime = hourOfDay + ":" + minute + " " + amOrPm;
         time.setText(setTime);
+        this.hourOfDay = hourOfDay;
+        this.minute = minute;
     }
 
     @Override
@@ -111,11 +118,13 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
                 realm.beginTransaction();
                 message.setCustomListName(listName);
                 message.setCustomListDetails(
-                        new CustomListDetails(listName, subject_text, notes_text, date_text, time_text, isAlarmEnabled, isNotifEnabled ));
+                        new CustomListDetails
+                                (listName, subject_text, notes_text,
+                                        new Time(year, month, dayOfMonth, hourOfDay, minute), isAlarmEnabled, isNotifEnabled ));
                 realm.copyToRealmOrUpdate(message);
-                Intent customListMessagesIntent = new Intent(EditMessageActivity.this, CustomListMessagesActivity.class);
-                customListMessagesIntent.putExtra("list_name", listName);
-                startActivity(customListMessagesIntent);
+                Intent customListMessageDetailIntent = new Intent(EditMessageActivity.this, CustomListMessageDetailActivity.class);
+                customListMessageDetailIntent.putExtra("messageId", message.getId());
+                startActivity(customListMessageDetailIntent);
                 break;
             case R.id.edit_message_cancel:
                 finish();

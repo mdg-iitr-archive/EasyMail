@@ -24,7 +24,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             tools:text="@string/Subject_test"
-            android:textSize="24sp"/>
+            android:textSize="16sp"/>
         <View
             android:id="@+id/view_subject"
             android:layout_width="match_parent"
@@ -33,8 +33,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:layout_below="@+id/email_subject"
-            android:background="#bbb"
-            />
+            android:background="#bbb" />
         <TextView
             android:id="@+id/email_from"
             android:layout_width="wrap_content"
@@ -42,9 +41,7 @@
             android:layout_below="@+id/view_subject"
             android:layout_marginStart="16dp"
             tools:text="Google"
-            android:textSize="16sp"
-            android:layout_marginBottom="8dp"
-            />
+            android:layout_marginBottom="8dp" />
         <TextView
             android:id="@+id/text_to"
             android:layout_width="wrap_content"
@@ -77,8 +74,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
-            tools:text="@string/snippet_test"
-            android:textSize="14sp" />
+            tools:text="@string/snippet_test" />
         <TextView
             android:id="@+id/expand_collapse_email"
             android:layout_width="wrap_content"
@@ -86,7 +82,6 @@
             android:layout_below="@+id/email_snippet"
             android:layout_marginBottom="8dp"
             android:text="@string/read_full_message"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"/>
+            android:layout_centerHorizontal="true"/>
     </RelativeLayout>
  </android.support.v7.widget.CardView>

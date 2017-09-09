@@ -9,16 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
-import com.example.android.easymail.CurrentDayMessageClickListener;
+import com.example.android.easymail.interfaces.CurrentDayMessageClickListener;
 import com.example.android.easymail.R;
 import com.example.android.easymail.models.Message;
-
-
-import org.w3c.dom.Text;
 
 /**
  * Created by Harshit Bansal on 6/13/2017.

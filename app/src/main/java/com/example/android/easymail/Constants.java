@@ -25,4 +25,14 @@ public class Constants {
      * Auth token type
      */
     public static final String AUTHTOKEN_TYPE_FULL_ACCESS = "Full access";
+
+    /**
+     * Dismiss action type
+     */
+    public static final String ACTION_DISMISS = "action_dismiss";
+
+    /**
+     * Snooze action type
+     */
+    public static final String ACTION_SNOOZE = "action_snooze";
 }
