@@ -18,9 +18,10 @@ import android.widget.TimePicker;
 import com.example.android.easymail.models.CustomListDetails;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.Time;
+import com.example.android.easymail.utils.DatePickerFragment;
+import com.example.android.easymail.utils.TimePickerFragment;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;

@@ -10,6 +10,7 @@ import com.example.android.easymail.models.MessageHeader;
 import com.example.android.easymail.models.MessagePart;
 import com.example.android.easymail.models.MessagePayload;
 import com.example.android.easymail.models.RealmString;
+import com.example.android.easymail.utils.Constants;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;

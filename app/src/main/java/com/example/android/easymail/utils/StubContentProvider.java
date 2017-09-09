@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;

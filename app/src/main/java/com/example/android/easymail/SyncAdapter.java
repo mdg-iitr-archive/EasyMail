@@ -24,6 +24,7 @@ import com.example.android.easymail.models.MessagePart;
 import com.example.android.easymail.models.MessagePayload;
 import com.example.android.easymail.models.RealmString;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
+import com.example.android.easymail.utils.Constants;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;

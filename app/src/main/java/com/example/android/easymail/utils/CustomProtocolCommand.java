@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import com.sun.mail.iap.Argument;
 import com.sun.mail.iap.ProtocolException;

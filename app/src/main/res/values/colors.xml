@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="White">#FFFFFF</color>
+    <color name="senderColor">#FFF</color>
+    <color name="selectedsenderColor">#2000</color>
 </resources>

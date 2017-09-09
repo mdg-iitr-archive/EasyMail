@@ -5,8 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.example.android.easymail.Authenticator;
-import com.google.android.gms.auth.api.Auth;
+import com.example.android.easymail.utils.Authenticator;
 
 /**
  * Created by Harshit Bansal on 6/23/2017.

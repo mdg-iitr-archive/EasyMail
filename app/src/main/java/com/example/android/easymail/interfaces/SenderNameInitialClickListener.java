@@ -6,5 +6,5 @@ package com.example.android.easymail.interfaces;
 
 public interface SenderNameInitialClickListener {
 
-    public void onSenderNameInitialClick(int day, int row, int column, int isExpanded);
+    void onSenderNameInitialClick(int day, int row, int column, int isExpanded);
 }
