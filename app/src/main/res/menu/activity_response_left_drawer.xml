@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/left_nav_to_do"
+        android:title="To - Do"/>
+    <item
+        android:id="@+id/left_nav_follow_up"
+        android:title="Follow Up"/>
+    <item
+        android:id="@+id/left_nav_launch_events"
+        android:title="Launch Events"/>
+    <item
+        android:id="@+id/left_nav_business_events"
+        android:title="Business Events"/>
+</menu>
