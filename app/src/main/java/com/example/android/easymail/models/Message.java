@@ -16,7 +16,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Harshit Bansal on 5/20/2017.
  */
 
-public class Message extends RealmObject implements Parcelable{
+public class Message extends RealmObject {
 
     @PrimaryKey
     private String id;
@@ -26,38 +26,6 @@ public class Message extends RealmObject implements Parcelable{
     private MessagePayload payload;
     private String customListName;
     private CustomListDetails customListDetails;
-
-    public Message(){
-
-    }
-
-    public Message(String id, String threadId, String snippet, RealmList<RealmString> labelIds, MessagePayload payload) {
-
-        this.id = id;
-        this.threadId = threadId;
-        this.snippet = snippet;
-        this.labelIds = labelIds;
-        this.payload = payload;
-    }
-
-    protected Message(Parcel in) {
-        id = in.readString();
-        threadId = in.readString();
-        snippet = in.readString();
-        customListName = in.readString();
-    }
-
-    public static final Creator<Message> CREATOR = new Creator<Message>() {
-        @Override
-        public Message createFromParcel(Parcel in) {
-            return new Message(in);
-        }
-
-        @Override
-        public Message[] newArray(int size) {
-            return new Message[size];
-        }
-    };
 
     public String getThreadId() {
         return threadId;
@@ -117,18 +85,5 @@ public class Message extends RealmObject implements Parcelable{
 
     public void setCustomListName(String customListName) {
         this.customListName = customListName;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
-        dest.writeString(threadId);
-        dest.writeString(snippet);
-        dest.writeString(customListName);
     }
 }

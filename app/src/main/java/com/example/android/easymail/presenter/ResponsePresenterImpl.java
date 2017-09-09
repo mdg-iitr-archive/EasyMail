@@ -15,6 +15,7 @@ import com.example.android.easymail.interactor.ResponseInteractor;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.view.ResponseActivityView;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import net.openid.appauth.AuthState;
@@ -87,6 +88,11 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     public void onRealmMessagesListFormed(int count) {
 
         responseInteractor.formMessagesGridView(this, count);
+    }
+
+    @Override
+    public void setCredential(String acsessToken) {
+        responseActivityView.getCredential(acsessToken);
     }
 
     @Override

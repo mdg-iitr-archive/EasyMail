@@ -23,6 +23,7 @@ import java.util.GregorianCalendar;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 public class EditMessageActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 
@@ -44,7 +45,9 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
         listName = getIntent().getExtras().getString("listName");
-        message = getIntent().getExtras().getParcelable("message");
+        String messageId = (String) getIntent().getExtras().get("messageId");
+        RealmResults<Message> results = realm.where(com.example.android.easymail.models.Message.class).equalTo("id", messageId).findAll();
+        message = realm.copyFromRealm(results).get(0);
         for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
             String check = message.getPayload().getHeaders().get(i).getName();
             if (check.equals("Subject")) {

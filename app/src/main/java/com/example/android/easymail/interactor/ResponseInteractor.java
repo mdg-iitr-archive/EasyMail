@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationResponse;
@@ -32,6 +33,7 @@ public interface ResponseInteractor {
         void onZeroMessagesReceived();
         void onMessagesReceived();
         void onRealmMessagesListFormed(int count);
+        void setCredential(String accessToken);
     }
     void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context);
     void performMesssageRequestTask(PresenterCallback callback, String accessToken, AuthorizationResponse response, AuthorizationService service);

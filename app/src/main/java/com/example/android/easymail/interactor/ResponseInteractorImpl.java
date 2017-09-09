@@ -73,7 +73,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         realm = Realm.getInstance(configuration);
 
         RealmResults<CurrentDayMessageSendersRealmList> results = realm.where(CurrentDayMessageSendersRealmList.class).findAll();
-        currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
+        //currentDayMessageSendersRealmList =  realm.copyFromRealm(results);
         //formMessagesGridView(callback, currentDayMessageSendersRealmList.size());
     }
 
@@ -83,6 +83,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
         GoogleCredential googleCredential = new GoogleCredential().setAccessToken(accessToken);
         if (accessToken != null){
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+            callback.setCredential(accessToken);
             //callback.autoSignedInTokenReceived();
             try {
                 startBackgroundTask(callback, credential);
@@ -90,40 +91,42 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                 e.printStackTrace();
             }
         }
-        if (response != null){
-            service.performTokenRequest(
-                    response.createTokenExchangeRequest(),
-                    new AuthorizationService.TokenResponseCallback() {
-                        @Override
-                        public void onTokenRequestCompleted(TokenResponse resp, AuthorizationException ex) {
-                            if (resp != null) {
-                                //exchange succeeded\\
-                                callback.onExchangeSuccedded();
-                                //callback.onMakeTokenRequest();
-                                String accessToken = resp.accessToken;
-                                AuthState state = new AuthState(response, resp, ex);
-                                callback.writeAuthState(state);
-                                GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-                                try {
-                                    startBackgroundTask(callback, credential);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+        else {
+            if (response != null) {
+                service.performTokenRequest(
+                        response.createTokenExchangeRequest(),
+                        new AuthorizationService.TokenResponseCallback() {
+                            @Override
+                            public void onTokenRequestCompleted(TokenResponse resp, AuthorizationException ex) {
+                                if (resp != null) {
+                                    //exchange succeeded\\
+                                    callback.onExchangeSuccedded();
+                                    //callback.onMakeTokenRequest();
+                                    String accessToken = resp.accessToken;
+                                    AuthState state = new AuthState(response, resp, ex);
+                                    callback.writeAuthState(state);
+                                    GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+                                    callback.setCredential(accessToken);
+                                    try {
+                                        startBackgroundTask(callback, credential);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    //exchange failed\\
+                                    callback.onExchangeFailed();
+                                    AuthState state = new AuthState(response, null, ex);
+                                    callback.writeAuthState(state);
                                 }
                             }
-                            else {
-                                //exchange failed\\
-                                callback.onExchangeFailed();
-                                AuthState state = new AuthState(response, null, ex);
-                                callback.writeAuthState(state);
-                            }
                         }
-                    }
-            );
+                );
+            } else {
+                //authorization failed\\
+                callback.onAuthorizationFailed();
+            }
         }
-        else {
-            //authorization failed\\
-            callback.onAuthorizationFailed();
-        }
+
     }
 
     @Override
@@ -177,7 +180,7 @@ public class ResponseInteractorImpl implements ResponseInteractor{
                     SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
                     String year = yearFormat.format(Calendar.getInstance().getTime());
 
-                    if (words[1].equals("20") && words[2].equals(month) && words[3].equals(year)) {
+                    if (words[1].equals(day) && words[2].equals(month) && words[3].equals(year)) {
                         currentDayMessages.add(message);
                     }
                     else {

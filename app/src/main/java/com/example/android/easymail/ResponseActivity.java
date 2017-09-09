@@ -1,15 +1,25 @@
 package com.example.android.easymail;
 
+import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -23,15 +33,25 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.services.gmail.model.Message;
 
+import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationService;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+import retrofit2.http.GET;
+
 public class ResponseActivity extends AppCompatActivity implements
         SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
-        NavigationView.OnNavigationItemSelectedListener{
+        NavigationView.OnNavigationItemSelectedListener {
 
     Context context = this;
     private LinearLayout linearLayout;
@@ -45,13 +65,91 @@ public class ResponseActivity extends AppCompatActivity implements
     private com.example.android.easymail.models.Message message;
     private NavigationView leftNavigationView, rightNavigationView;
     List<CurrentDayMessageSendersList> list;
+    AccountManager accountManager;
+    private Realm realm;
+    private static final int GET_ACCOUNTS_PERMISSION = 100;
+    // Content provider authority
+    public static final String AUTHORITY = "com.example.android.easymail.provider";
+    // Account
+    public static Account ACCOUNT = null;
+    // Sync interval constants
+    public static final long SECONDS_PER_MINUTE = 60L;
+    public static final long SYNC_INTERVAL_IN_MINUTES = 60L;
+    public static final long SYNC_INTERVAL =
+            SYNC_INTERVAL_IN_MINUTES *
+                    SECONDS_PER_MINUTE;
+    // A content resolver for accessing the provider
+    ContentResolver mResolver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_response);
+
         initViews();
         regListeners();
+        accountManager = AccountManager.get(this);
+
+        // ask for the dangerous permission of adding accounts
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+
+            // permission not granted, thus request again for the permissions
+            ActivityCompat.requestPermissions(ResponseActivity.this,
+                    new String[]{Manifest.permission.GET_ACCOUNTS},
+                    GET_ACCOUNTS_PERMISSION);
+        } else {
+
+            // permission granted
+            // acquire the list of accounts from account manager
+            final Account accountList[] = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+            if (accountList.length == 0) {
+
+                // if no account is present, then add a new account
+                accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
+                        , null, this, null, null);
+            } else {
+
+                // account is present, thus get the deserialized auth state
+                ACCOUNT =  accountList[0];
+                final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(ACCOUNT, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
+                try {
+
+                    Bundle bnd = future.getResult();
+                    final String deserializedAuthState = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+                    AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
+                    AuthorizationService service = new AuthorizationService(context);
+                    final ResponseActivityView instance = this;
+                    new RequestAccessToken(state).execute();
+                }
+                    /*
+                    // obtain the fresh access token from the auth state
+                    state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                            if (ex == null) {
+                                new RequestAccessToken()
+                                //responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
+                                //final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
+                                //final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
+                                //responsePresenter.getOfflineMessages();
+                                //responsePresenter.performTokenRequest(response, accessToken);
+                            } else {
+                                Log.e("auth token exception", ex.toString());
+                            }
+                        }
+                    });
+                    Log.d("easymail", "GetToken Bundle is " + bnd);
+                }
+                */catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        mResolver = getContentResolver();
+        // mResolver.addPeriodicSync(ACCOUNT, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL);
+
+        /*
         responsePresenter = new ResponsePresenterImpl(this, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
         final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
         final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
@@ -61,6 +159,20 @@ public class ResponseActivity extends AppCompatActivity implements
         responsePresenter.performTokenRequest(response, isAutoSignedInToken);
         //responsePresenter.getOfflineMessages();
 
+*/
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        switch(requestCode){
+            case GET_ACCOUNTS_PERMISSION:
+                if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+
+                    final Account accountList[] = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+
+                }
+        }
     }
 
     private void initViews(){
@@ -177,9 +289,22 @@ public class ResponseActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void getCredential(String accessToken) {
+
+        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+        serviceIntent.putExtra("token", accessToken);
+        startService(serviceIntent);
+    }
+
+    @Override
     public void onCurrentDayMessageClickListener(View v, com.example.android.easymail.models.Message child) {
 
         message = child;
+        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
+        realm = Realm.getInstance(configuration);
+        realm.beginTransaction();
+        realm.copyToRealmOrUpdate(message);
+        realm.commitTransaction();
         drawerLayout.openDrawer(GravityCompat.END);
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
     }
@@ -212,26 +337,67 @@ public class ResponseActivity extends AppCompatActivity implements
             // On click for right navigation view
             case R.id.right_nav_to_do:
                 editMessageIntent.putExtra("listName", "To-Do");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_follow_up:
                 editMessageIntent.putExtra("listName", "Follow Up");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_launch_events:
                 editMessageIntent.putExtra("listName", "Launch Events");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
+                RealmResults<com.example.android.easymail.models.Message> results = realm.where(com.example.android.easymail.models.Message.class).equalTo("id", message.getId()).findAll();
+                com.example.android.easymail.models.Message messages = realm.copyFromRealm(results).get(0);
                 startActivity(editMessageIntent);
                 break;
             case R.id.right_nav_business_events:
                 editMessageIntent.putExtra("listName", "Business Events");
-                editMessageIntent.putExtra("message", message);
+                editMessageIntent.putExtra("messageId", message.getId());
                 startActivity(editMessageIntent);
                 break;
         }
         return true;
+    }
+
+    public void refresh(View view) {
+
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(ACCOUNT, AUTHORITY, settingsBundle);
+    }
+
+    public class RequestAccessToken extends AsyncTask<Void, Void, Void>{
+
+        AuthState authState;
+        public RequestAccessToken(AuthState state){
+            authState = state;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            AuthorizationService service = new AuthorizationService(context);
+
+            // obtain the fresh access token from the auth state
+            authState.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
+                @Override
+                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                    if (ex == null) {
+                        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+                        serviceIntent.putExtra("token", accessToken);
+                        startService(serviceIntent);
+                    } else {
+                        Log.e("auth token exception", ex.toString());
+                    }
+                }
+            });
+            Log.d("easymail", "GetToken Bundle is ");
+            return null;
+        }
     }
 }
 
