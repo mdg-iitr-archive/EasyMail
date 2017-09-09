@@ -26,19 +26,20 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     private List<CurrentDayMessageSendersRealmList> currentDayMessagesList;
     private Context context;
     private int size;
-    private int row, column;
+    private int day, row, column;
     private SenderNameInitialClickListener senderNameInitialClickListener;
     private CurrentDayMessageClickListener currentDayMessageClickListener;
 
     public EmailTilesAdapter(SenderNameInitialClickListener senderNameInitialClickListener,
                              CurrentDayMessageClickListener currentDayMessageClickListener,
                              Context context, @NonNull List<CurrentDayMessageSendersRealmList> currentDayMessagesList,
-                             int row, int column) {
+                             int day, int row, int column) {
         super(currentDayMessagesList);
         this.context = context;
         this.currentDayMessagesList = currentDayMessagesList;
         this.senderNameInitialClickListener = senderNameInitialClickListener;
         this.currentDayMessageClickListener = currentDayMessageClickListener;
+        this.day = day;
         this.row = row;
         this.column = column;
     }
@@ -56,14 +57,14 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     @Override
     public SenderViewHolder onCreateParentViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
-        return new SenderViewHolder(senderNameInitialClickListener, view, row, column);
+        return new SenderViewHolder(senderNameInitialClickListener, view, day, row, column);
     }
 
     @NonNull
     @Override
     public MessageViewHolder onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_brief, parent, false);
-        return new MessageViewHolder(currentDayMessageClickListener, view, row, column, context);
+        return new MessageViewHolder(currentDayMessageClickListener, view, day, row, column, context);
     }
 
     @Override

@@ -137,33 +137,7 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
                     });
         }
 
-
-        /*
-        AuthState state = readAuthState();
-        if (state != null){
-            state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
-                @Override public void execute(
-                        String accessToken,
-                        String idToken,
-                        AuthorizationException ex) {
-                    if (ex != null) {
-                        // negotiation for fresh tokens failed, check ex for more details
-                        Log.e("State Error!", ex.toString());
-                        Toast.makeText(MainActivity.this, "Ex", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        // use the access token to do something ...
-                        Intent responseActivityIntent = new Intent(MainActivity.this, ResponseActivity.class);
-                        responseActivityIntent.putExtra("is_auto_signed_in_token", accessToken);
-                        startActivity(responseActivityIntent);
-                    }
-                }
-            });
-        }
-        */
-
-
-/*
+    /*
         OptionalPendingResult<GoogleSignInResult> pendingResult =
                 Auth.GoogleSignInApi.silentSignIn(googleApiClient);
         if (pendingResult.isDone()) {
@@ -186,7 +160,7 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
                 }
             });
         }
-        */
+     */
     }
 
     private void regListeners() {

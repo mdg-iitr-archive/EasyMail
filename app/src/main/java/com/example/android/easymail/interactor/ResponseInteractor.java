@@ -28,12 +28,13 @@ public interface ResponseInteractor {
         void onExchangeFailed();
         void writeAuthState(AuthState state);
         void formLinearLayout(int linearLayoutId);
-        void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, int recyclerViewId);
+        void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int day, int i, int j, int recyclerViewId);
         void addLinearLayout();
         void onZeroMessagesReceived();
         void onMessagesReceived();
         void onRealmMessagesListFormed(int count);
         void setCredential(String accessToken);
+        void addDayLinearLayout(int linearLayoutId);
     }
     void getRealmSavedMessages(ResponseInteractor.PresenterCallback callback, Context context);
     void performMesssageRequestTask(PresenterCallback callback, String accessToken, AuthorizationResponse response, AuthorizationService service);

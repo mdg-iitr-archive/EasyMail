@@ -141,5 +141,5 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
         isAlarmEnabled = alarmCheckBox.isSelected();
         isNotifEnabled = notifCheckBox.isSelected();
     }
-
 }
+
