@@ -15,10 +15,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkingFactory {
 
-    public static final String BASE_URL = "https://www.googleapis.com/gmail/v1/";
+    public static final String BASE_URL = "http://picasaweb.google.com/data/entry/api/user/";
     public static Retrofit retrofit;
 
-    public static Retrofit getClient(final String accessToken){
+    public static Retrofit getClient(){
 
         if(retrofit == null){
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder().
@@ -28,7 +28,7 @@ public class NetworkingFactory {
                             Request originalrequest = chain.request();
                             Request.Builder builder =
                                     originalrequest.newBuilder().header("Authorization",
-                                            accessToken);
+                                            " ");
                             Request newRequest = builder.build();
                             return chain.proceed(newRequest);
                         }
@@ -43,3 +43,4 @@ public class NetworkingFactory {
 
     }
 }
+

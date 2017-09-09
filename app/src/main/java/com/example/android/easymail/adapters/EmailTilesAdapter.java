@@ -48,7 +48,7 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
     @Override
     public SenderViewHolder onCreateParentViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
-        return new SenderViewHolder(senderNameInitialClickListener, view, day, row, column);
+        return new SenderViewHolder(context, senderNameInitialClickListener, view, day, row, column);
     }
 
     @NonNull

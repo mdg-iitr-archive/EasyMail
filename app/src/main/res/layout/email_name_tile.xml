@@ -4,26 +4,31 @@
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/email_item_name_initial"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="32dp"
-        android:paddingRight="32dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        tools:text="C"
-        android:textSize="32sp"/>
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/sender_photo"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="8dp"
+        android:src="@mipmap/ic_launcher"/>
 
     <TextView
         android:id="@+id/email_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/email_item_name_initial"
         android:background="@drawable/circle"
+        android:layout_alignEnd="@id/sender_photo"
         tools:text="5"
         android:textSize="12sp"
         android:textColor="#FFF"
         android:gravity="center"/>
 
+    <TextView
+        android:id="@+id/email_sender_name"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sender_photo"
+        android:text="Harshit"
+        android:textSize="12sp"
+        android:gravity="center"/>
 </RelativeLayout>

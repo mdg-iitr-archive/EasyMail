@@ -35,4 +35,18 @@ public class Constants {
      * Snooze action type
      */
     public static final String ACTION_SNOOZE = "action_snooze";
+
+    /**
+     * Sender information url
+     */
+    public static final String SENDER_INFO_URL = "http://picasaweb.google.com/data/entry/api/user/<hereYourUserIdOrYourEmail>?alt=json";
+
+    /**
+     * Retrieve original information url of sender
+     * @param email The email of the sender
+     * @return The original url
+     */
+    public static String getSenderInfoUrl(String email){
+        return SENDER_INFO_URL.replace("<hereYourUserIdOrYourEmail>", email);
+    }
 }

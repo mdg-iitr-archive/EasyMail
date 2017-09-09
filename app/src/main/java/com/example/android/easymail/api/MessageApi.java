@@ -2,6 +2,8 @@ package com.example.android.easymail.api;
 
 import com.example.android.easymail.models.Message;
 
+import org.json.JSONObject;
+
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
@@ -13,8 +15,6 @@ import retrofit2.http.Path;
 
 public interface MessageApi {
 
-    @GET("users/{user}/messages/{id}")
-    Call<Message> getMessage(@Header("Authorization") String accessToken,
-                             @Path("user") String user,
-                             @Path("id") String id);
+    @GET("{user}?alt=json")
+    Call<JSONObject> getUserInfo(@Path("user") String user);
 }
