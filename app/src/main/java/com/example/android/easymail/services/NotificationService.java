@@ -23,7 +23,7 @@ import io.realm.RealmResults;
  * Created by Harshit Bansal on 7/2/2017.
  */
 
-public class AlarmService extends Service {
+public class NotificationService extends Service {
 
     private Realm realm;
     private Message message;

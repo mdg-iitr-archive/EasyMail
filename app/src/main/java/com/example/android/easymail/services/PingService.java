@@ -10,7 +10,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.example.android.easymail.AlarmReceiver;
+import com.example.android.easymail.NotificationReceiver;
 import com.example.android.easymail.Constants;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.Time;
@@ -91,7 +91,7 @@ public class PingService extends Service {
     @TargetApi(Build.VERSION_CODES.N)
     private void setAlarmService(Time time, int newNotificationId) {
 
-        Intent alarmServiceIntent = new Intent(this, AlarmReceiver.class);
+        Intent alarmServiceIntent = new Intent(this, NotificationReceiver.class);
         alarmServiceIntent.putExtra("id", message.getId());
         alarmServiceIntent.putExtra("notif_id", newNotificationId);
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(this, 0, alarmServiceIntent, 0);

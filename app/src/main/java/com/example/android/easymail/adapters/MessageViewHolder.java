@@ -27,7 +27,7 @@ public class MessageViewHolder extends ChildViewHolder {
     private TextView subject, from, to, time, snippet, expand_collapse;
     private CardView emailCardView;
 
-    public MessageViewHolder(final CurrentDayMessageClickListener listener, @NonNull View itemView, final int row, final int column, Context context) {
+    public MessageViewHolder(final CurrentDayMessageClickListener listener, @NonNull View itemView, final int day, final int row, final int column, Context context) {
 
         super(itemView);
         this.listener = listener;

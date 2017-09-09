@@ -96,6 +96,11 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
+    public void addDayLinearLayout(int linearLayoutId) {
+        responseActivityView.appendLinearLayout(linearLayoutId);
+    }
+
+    @Override
     public void writeAuthState(AuthState state) {
         SharedPreferences authPrefs = context.getSharedPreferences(context.getResources().getString(R.string.AuthSharedPref), MODE_PRIVATE);
         authPrefs.edit()
@@ -114,13 +119,13 @@ public class ResponsePresenterImpl implements ResponsePresenter, ResponseInterac
     }
 
     @Override
-    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int i, int j, int recyclerViewId) {
+    public void formRecyclerView(List<CurrentDayMessageSendersRealmList> list, int day, int i, int j, int recyclerViewId) {
         RecyclerView m1 = new RecyclerView(context);
         m1.setId(recyclerViewId);
         m1.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         m1.setLayoutManager(new LinearLayoutManager(context));
         currentLinearLayout.addView(m1);
-        responseActivityView.formRecyclerView(list, i, j, m1);
+        responseActivityView.formRecyclerView(list, day, i, j, m1);
     }
 
     @Override
