@@ -8,8 +8,10 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -28,17 +30,17 @@ import android.widget.Toast;
 import com.example.android.easymail.adapters.EmailGridViewAdapter;
 import com.example.android.easymail.adapters.EmailTilesAdapter;
 import com.example.android.easymail.interactor.ResponseInteractorImpl;
+import com.example.android.easymail.interfaces.CurrentDayMessageClickListener;
+import com.example.android.easymail.interfaces.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersList;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.presenter.ResponsePresenterImpl;
+import com.example.android.easymail.services.MessagesPullService;
 import com.example.android.easymail.view.ResponseActivityView;
 import com.example.android.easymail.views.ExpandableGridView;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.services.gmail.model.Message;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 
 import java.util.ArrayList;
@@ -47,7 +49,6 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import retrofit2.http.GET;
 
 public class ResponseActivity extends AppCompatActivity implements
         SenderNameInitialClickListener, CurrentDayMessageClickListener, ResponseActivityView,
@@ -66,7 +67,9 @@ public class ResponseActivity extends AppCompatActivity implements
     private NavigationView leftNavigationView, rightNavigationView;
     List<CurrentDayMessageSendersList> list;
     AccountManager accountManager;
+    private SharedPreferences preferences;
     private Realm realm;
+    private boolean isAutoDownloadAttachment;
     private static final int GET_ACCOUNTS_PERMISSION = 100;
     // Content provider authority
     public static final String AUTHORITY = "com.example.android.easymail.provider";
@@ -80,6 +83,7 @@ public class ResponseActivity extends AppCompatActivity implements
                     SECONDS_PER_MINUTE;
     // A content resolver for accessing the provider
     ContentResolver mResolver;
+    public String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,25 +94,23 @@ public class ResponseActivity extends AppCompatActivity implements
         regListeners();
         accountManager = AccountManager.get(this);
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isAutoDownloadAttachment = preferences.getBoolean("auto_download_attachment", false);
         // ask for the dangerous permission of adding accounts
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-
             // permission not granted, thus request again for the permissions
             ActivityCompat.requestPermissions(ResponseActivity.this,
                     new String[]{Manifest.permission.GET_ACCOUNTS},
                     GET_ACCOUNTS_PERMISSION);
         } else {
-
             // permission granted
             // acquire the list of accounts from account manager
             final Account accountList[] = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
             if (accountList.length == 0) {
-
                 // if no account is present, then add a new account
                 accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
                         , null, this, null, null);
             } else {
-
                 // account is present, thus get the deserialized auth state
                 ACCOUNT =  accountList[0];
                 final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(ACCOUNT, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
@@ -293,7 +295,7 @@ public class ResponseActivity extends AppCompatActivity implements
 
         Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
         serviceIntent.putExtra("token", accessToken);
-        startService(serviceIntent);
+        //        startService(serviceIntent);
     }
 
     @Override
@@ -313,6 +315,9 @@ public class ResponseActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Intent editMessageIntent = new Intent(ResponseActivity.this, EditMessageActivity.class);
         Intent customListMessagesIntent = new Intent(ResponseActivity.this, CustomListMessagesActivity.class);
+        Intent mailClassifierIntent = new Intent(ResponseActivity.this, AllMessagesActivity.class);
+        Intent searchByDateIntent = new Intent(ResponseActivity.this, SearchByDateActivity.class);
+        Intent settingsIntent =  new Intent(ResponseActivity.this, SettingsActivity.class);
 
         switch (item.getItemId()){
 
@@ -333,7 +338,17 @@ public class ResponseActivity extends AppCompatActivity implements
                 customListMessagesIntent.putExtra("listName", "Business Events");
                 startActivity(customListMessagesIntent);
                 break;
-
+            case R.id.left_nav_mail_classifier:
+                mailClassifierIntent.putExtra("token", token);
+                startActivity(mailClassifierIntent);
+                break;
+            case R.id.left_nav_search_by_date:
+                searchByDateIntent.putExtra("token", token);
+                startActivity(searchByDateIntent);
+                break;
+            case R.id.left_nav_settings:
+                startActivity(settingsIntent);
+                break;
             // On click for right navigation view
             case R.id.right_nav_to_do:
                 editMessageIntent.putExtra("listName", "To-Do");

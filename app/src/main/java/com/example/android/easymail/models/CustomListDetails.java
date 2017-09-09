@@ -13,27 +13,25 @@ public class CustomListDetails extends RealmObject{
     private String notes;
     private boolean isAlarmEnabled;
     private boolean isNotifEnabled;
-    private String date;
-    private String time;
+    private Time time;
 
     public CustomListDetails(){}
 
-    public CustomListDetails(String listName, String subject, String notes, String date, String time, boolean isAlarmEnabled, boolean isNotifEnabled){
+    public CustomListDetails(String listName, String subject, String notes, Time time, boolean isAlarmEnabled, boolean isNotifEnabled){
 
         this.listName = listName;
         this.subject = subject;
         this.notes = notes;
-        this.date = date;
         this.time = time;
         this.isAlarmEnabled = isAlarmEnabled;
         this.isNotifEnabled = isNotifEnabled;
     }
 
-    public String getTime() {
+    public Time getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(Time time) {
         this.time = time;
     }
 
@@ -80,14 +78,5 @@ public class CustomListDetails extends RealmObject{
 
     public void setAlarmEnabled(boolean alarmEnabled) {
         isAlarmEnabled = alarmEnabled;
-    }
-
-    public String getDate() {
-
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
     }
 }
