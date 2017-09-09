@@ -119,26 +119,28 @@ public class WeeklyMessagesService extends IntentService {
                             String pageLastId = listMessagesResponse.getMessages().get(i).getId();
                             Message message = service.users().messages().get(user, pageLastId).execute();
                             String date = message.getPayload().getHeaders().get(1).getValue().split(",")[1];
-                            String[] words = date.split("\\s");
+                            if (date != null) {
+                                String[] words = date.split("\\s");
 
-                            SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
-                            String day = dayFormat.format(Calendar.getInstance().getTime());
+                                SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
+                                String day = dayFormat.format(Calendar.getInstance().getTime());
 
-                            SimpleDateFormat monthFormat = new SimpleDateFormat("MMM");
-                            String month = monthFormat.format(Calendar.getInstance().getTime());
+                                SimpleDateFormat monthFormat = new SimpleDateFormat("MMM");
+                                String month = monthFormat.format(Calendar.getInstance().getTime());
 
-                            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
-                            String year = yearFormat.format(Calendar.getInstance().getTime());
-                            Calendar currentDate = GregorianCalendar.getInstance();
-                            currentDate.set(Integer.parseInt(year), getMonthNo(month), Integer.parseInt(day), 0, 0);
-                            Calendar lastIdDate = GregorianCalendar.getInstance();
-                            lastIdDate.set(Integer.parseInt(words[3]), getMonthNo(words[2]), Integer.parseInt(words[1]), 0, 0);
-                            Log.e("time", String.valueOf(currentDate.getTime()));
-                            Log.e("time", String.valueOf(lastIdDate.getTime()));
-                            lastIdDate.add(Calendar.DATE, 7);
-                            Log.e("time", String.valueOf(lastIdDate.getTime()));
-                            if (!lastIdDate.after(currentDate)) {
-                                isCompleted = true;
+                                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+                                String year = yearFormat.format(Calendar.getInstance().getTime());
+                                Calendar currentDate = GregorianCalendar.getInstance();
+                                currentDate.set(Integer.parseInt(year), getMonthNo(month), Integer.parseInt(day), 0, 0);
+                                Calendar lastIdDate = GregorianCalendar.getInstance();
+                                lastIdDate.set(Integer.parseInt(words[3]), getMonthNo(words[2]), Integer.parseInt(words[1]), 0, 0);
+                                Log.e("time", String.valueOf(currentDate.getTime()));
+                                Log.e("time", String.valueOf(lastIdDate.getTime()));
+                                lastIdDate.add(Calendar.DATE, 7);
+                                Log.e("time", String.valueOf(lastIdDate.getTime()));
+                                if (!lastIdDate.after(currentDate)) {
+                                    isCompleted = true;
+                                }
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -201,102 +203,104 @@ public class WeeklyMessagesService extends IntentService {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    String[] words = date.split("\\s");
-                    // check if date is older then a week from the present date
-                    // if so break the for loop and delete all the ids obtained till
-                    // then.
-                    Calendar messageDate = Calendar.getInstance();
-                    int monthNo = getMonthNo(words[2]);
-                    messageDate.set(Integer.parseInt(words[3]), monthNo, Integer.parseInt(words[1]), 0, 0);
-                    int daysBetween = (int) calendarDaysBetween(messageDate, previousDate);
-                    Calendar sevenDaysLater = Calendar.getInstance();
-                    sevenDaysLater.setTimeInMillis(messageDate.getTimeInMillis());
-                    Log.i("messageDate", String.valueOf(messageDate));
-                    Log.i("sevenDaysLater", String.valueOf(sevenDaysLater));
-                    sevenDaysLater.add(Calendar.DATE, 7);
+                    if (date != null) {
+                        String[] words = date.split("\\s");
+                        // check if date is older then a week from the present date
+                        // if so break the for loop and delete all the ids obtained till
+                        // then.
+                        Calendar messageDate = Calendar.getInstance();
+                        int monthNo = getMonthNo(words[2]);
+                        messageDate.set(Integer.parseInt(words[3]), monthNo, Integer.parseInt(words[1]), 0, 0);
+                        int daysBetween = (int) calendarDaysBetween(messageDate, previousDate);
+                        Calendar sevenDaysLater = Calendar.getInstance();
+                        sevenDaysLater.setTimeInMillis(messageDate.getTimeInMillis());
+                        Log.i("messageDate", String.valueOf(messageDate));
+                        Log.i("sevenDaysLater", String.valueOf(sevenDaysLater));
+                        sevenDaysLater.add(Calendar.DATE, 7);
 
-                    if (!sevenDaysLater.after(currentDate)) {
-                        // clear the entire sublist after this date
-                        day1.subList(i, day1.size()).clear();
-                        // make a callback to the activity that the
-                        // messages of the end day of the week have
-                        // been fetched.
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("days_between", 7);
-                        rec.send(0, bundle);
-                        break;
-                    }
-
-                    if (daysBetween >= 1) {
-                        previousDate.setTimeInMillis(messageDate.getTimeInMillis());
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("days_between", (int) calendarDaysBetween(messageDate, currentDate));
-                        rec.send(0, bundle);
-                    }
-
-                    com.example.android.easymail.models.Message modifiedMessage = new com.example.android.easymail.models.Message();
-                    modifiedMessage.setId(message.getId());
-                    modifiedMessage.setThreadId(message.getThreadId());
-                    RealmList<RealmString> stringList = new RealmList<>();
-                    for (String labelId : message.getLabelIds()) {
-                        stringList.add(new RealmString(labelId));
-                    }
-                    modifiedMessage.setLabelIds(stringList);
-                    modifiedMessage.setSnippet(message.getSnippet());
-
-                    String mimeType = message.getPayload().getMimeType();
-                    RealmList<MessageHeader> headers = new RealmList<>();
-                    for (MessagePartHeader header : message.getPayload().getHeaders()) {
-                        String name = header.getName();
-                        if (name.equals("From")) {
-                            sender = header.getValue();
-                            modifiedMessage.setSender(sender);
-                            senders.add(new Sender(sender));
+                        if (!sevenDaysLater.after(currentDate)) {
+                            // clear the entire sublist after this date
+                            day1.subList(i, day1.size()).clear();
+                            // make a callback to the activity that the
+                            // messages of the end day of the week have
+                            // been fetched.
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("days_between", 7);
+                            rec.send(0, bundle);
+                            break;
                         }
-                        headers.add(new MessageHeader(header.getName(), header.getValue()));
-                    }
-                    RealmList<MessagePart> parts = new RealmList<>();
-                    if (message.getPayload().getParts() != null) {
-                        for (com.google.api.services.gmail.model.MessagePart part : message.getPayload().getParts()) {
-                            String partMimeType = part.getMimeType();
-                            MessageBody body = new MessageBody(part.getBody().getData(),
-                                    part.getBody().getSize());
-                            RealmList<MessageHeader> partHeader = new RealmList<>();
-                            for (MessagePartHeader pHeader : part.getHeaders()) {
-                                partHeader.add(new MessageHeader(pHeader.getName(), pHeader.getValue()));
+
+                        if (daysBetween >= 1) {
+                            previousDate.setTimeInMillis(messageDate.getTimeInMillis());
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("days_between", (int) calendarDaysBetween(messageDate, currentDate));
+                            rec.send(0, bundle);
+                        }
+
+                        com.example.android.easymail.models.Message modifiedMessage = new com.example.android.easymail.models.Message();
+                        modifiedMessage.setId(message.getId());
+                        modifiedMessage.setThreadId(message.getThreadId());
+                        RealmList<RealmString> stringList = new RealmList<>();
+                        for (String labelId : message.getLabelIds()) {
+                            stringList.add(new RealmString(labelId));
+                        }
+                        modifiedMessage.setLabelIds(stringList);
+                        modifiedMessage.setSnippet(message.getSnippet());
+
+                        String mimeType = message.getPayload().getMimeType();
+                        RealmList<MessageHeader> headers = new RealmList<>();
+                        for (MessagePartHeader header : message.getPayload().getHeaders()) {
+                            String name = header.getName();
+                            if (name.equals("From")) {
+                                sender = header.getValue();
+                                modifiedMessage.setSender(sender);
+                                senders.add(new Sender(sender));
                             }
-                            String partId = part.getPartId();
-                            String filename = part.getFilename();
-                            parts.add(new MessagePart(partMimeType, partHeader, body, partId, filename));
-                            if (filename != null && filename.length() > 0) {
-                                String attId = part.getBody().getAttachmentId();
-                                try {
-                                    MessagePartBody attachPart = service.users().messages().attachments().
-                                            get("harshit.bansalec@gmail.com", message.getId(), attId).execute();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                            headers.add(new MessageHeader(header.getName(), header.getValue()));
+                        }
+                        RealmList<MessagePart> parts = new RealmList<>();
+                        if (message.getPayload().getParts() != null) {
+                            for (com.google.api.services.gmail.model.MessagePart part : message.getPayload().getParts()) {
+                                String partMimeType = part.getMimeType();
+                                MessageBody body = new MessageBody(part.getBody().getData(),
+                                        part.getBody().getSize());
+                                RealmList<MessageHeader> partHeader = new RealmList<>();
+                                for (MessagePartHeader pHeader : part.getHeaders()) {
+                                    partHeader.add(new MessageHeader(pHeader.getName(), pHeader.getValue()));
+                                }
+                                String partId = part.getPartId();
+                                String filename = part.getFilename();
+                                parts.add(new MessagePart(partMimeType, partHeader, body, partId, filename));
+                                if (filename != null && filename.length() > 0) {
+                                    String attId = part.getBody().getAttachmentId();
+                                    try {
+                                        MessagePartBody attachPart = service.users().messages().attachments().
+                                                get("harshit.bansalec@gmail.com", message.getId(), attId).execute();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
+                        String file = message.getPayload().getFilename();
+                        com.example.android.easymail.models.MessagePartBody partBody =
+                                new com.example.android.easymail.models.MessagePartBody(message.getPayload().getBody().getSize());
+
+                        MessagePayload payload = new MessagePayload(mimeType,
+                                headers,
+                                parts,
+                                partBody, file);
+                        modifiedMessage.setPayload(payload);
+                        modifiedMessage.setCustomListName(null);
+                        modifiedMessage.setCustomListDetails(null);
+
+                        day1.get(i).setIsStored(1);
+                        realm.beginTransaction();
+                        realm.copyToRealmOrUpdate(modifiedMessage);
+                        realm.copyToRealmOrUpdate(day1);
+                        realm.copyToRealmOrUpdate(senders);
+                        realm.commitTransaction();
                     }
-                    String file = message.getPayload().getFilename();
-                    com.example.android.easymail.models.MessagePartBody partBody =
-                            new com.example.android.easymail.models.MessagePartBody(message.getPayload().getBody().getSize());
-
-                    MessagePayload payload = new MessagePayload(mimeType,
-                            headers,
-                            parts,
-                            partBody, file);
-                    modifiedMessage.setPayload(payload);
-                    modifiedMessage.setCustomListName(null);
-                    modifiedMessage.setCustomListDetails(null);
-
-                    day1.get(i).setIsStored(1);
-                    realm.beginTransaction();
-                    realm.copyToRealmOrUpdate(modifiedMessage);
-                    realm.copyToRealmOrUpdate(day1);
-                    realm.copyToRealmOrUpdate(senders);
-                    realm.commitTransaction();
                 }
             }
         }
