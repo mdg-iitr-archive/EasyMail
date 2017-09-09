@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import com.example.android.easymail.models.MailClassifierSender;
 

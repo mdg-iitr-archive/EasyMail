@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.android.easymail.DisplayMessageActivity">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/txt_subject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="New and updated: 10 specialisations and courses" />
+        <TextView
+            android:id="@+id/txt_sender_name_initial"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:layout_below="@+id/txt_subject"
+            android:background="@drawable/circle"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:visibility="invisible"
+            tools:text="M" />
+        <TextView
+            android:id="@+id/txt_sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/txt_subject"
+            android:layout_toEndOf="@+id/txt_sender_name_initial"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="MailStorm" />
+        <TextView
+            android:id="@+id/txt_receiver_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/txt_sender_name_initial"
+            android:layout_below="@+id/txt_sender_name"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:visibility="invisible"
+            android:text="to me" />
+        <TextView
+            android:id="@+id/txt_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/txt_sender_name_initial"
+            android:layout_below="@+id/txt_receiver_name"
+            android:gravity="center"
+            android:textSize="12sp"
+            tools:text="23 July 2017, 11:16 am" />
+        <TextView
+            android:id="@+id/txt_plain_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txt_date"
+            android:layout_marginTop="16dp"
+            android:textSize="14sp"
+            tools:text="Hello, I am Kashyap from IIT Roorkee." />
+        <WebView
+            android:id="@+id/message_web_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/txt_plain_message"/>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/message_attachments_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/message_web_view"/>
+    </RelativeLayout>
+</ScrollView>

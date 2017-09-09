@@ -54,7 +54,7 @@
 
         <!-- stub content provider ! -->
         <provider
-            android:name=".StubContentProvider"
+            android:name=".utils.StubContentProvider"
             android:authorities="com.example.android.easymail.provider"
             android:exported="false"
             android:syncable="true" />
@@ -83,19 +83,22 @@
                 android:resource="@xml/syncadapter" />
         </service>
 
-        <activity android:name=".SelectedSenderMessages" />
+        <activity android:name=".SelectedSenderMessagesActivity" />
         <activity android:name=".SearchByDateActivity" />
         <activity android:name=".CustomListMessageDetailActivity" />
 
-        <receiver android:name=".NotificationReceiver" />
-        <receiver android:name=".AlarmReceiver" />
+        <receiver android:name=".utils.NotificationReceiver" />
+        <receiver android:name=".utils.AlarmReceiver" />
+
         <service android:name=".services.NotificationService" />
         <service android:name=".services.WeeklyMessagesService" />
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
-        <activity android:name=".AlarmReceiverActivity"/>
+        <activity android:name=".AlarmReceiverActivity" />
+        <activity android:name=".AllAttachmentsActivity" />
+        <activity android:name=".DisplayMessageActivity"></activity>
     </application>
 
 </manifest>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/attachment_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/attachment_doc_type_icon"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:contentDescription="doc_icon" />
+    <TextView
+        android:id="@+id/attachment_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/attachment_doc_type_icon"
+        android:layout_marginStart="20dp"
+        android:textSize="12sp"
+        tools:text="2 MB"/>
+    <TextView
+        android:id="@+id/attachment_file_name"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/attachment_doc_type_icon"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="4dp"
+        android:maxLines="1"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        tools:text="ETE-2nd semester fees deposit"/>
+    <TextView
+        android:id="@+id/attachment_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/attachment_download"
+        android:layout_alignBottom="@+id/attachment_file_name"
+        android:textSize="12sp"
+        tools:text="8:14 am"/>
+    <TextView
+        android:id="@+id/attachment_sender"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/attachment_file_name"
+        android:layout_toEndOf="@+id/attachment_doc_type_icon"
+        android:layout_marginStart="18dp"
+        android:textSize="12sp"
+        tools:text="Harshit Bansal"/>
+    <TextView
+        android:id="@+id/attachment_subject"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/attachment_sender"
+        android:layout_toEndOf="@+id/attachment_doc_type_icon"
+        android:layout_marginStart="18dp"
+        android:maxLines="1"
+        android:textSize="12sp"
+        tools:text="This is the message subject"/>
+    <ImageView
+        android:id="@+id/attachment_download"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="download_image"
+        app:srcCompat="@drawable/ic_file_download_black_24dp"/>
+</RelativeLayout>

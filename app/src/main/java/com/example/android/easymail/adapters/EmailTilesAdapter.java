@@ -44,20 +44,11 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
         this.column = column;
     }
 
-
-    /*
-        @Override
-        public EmailTilesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
-            return new ViewHolder(view);
-        }
-    */
     @NonNull
     @Override
     public SenderViewHolder onCreateParentViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.email_name_tile, parent, false);
-        return new SenderViewHolder(senderNameInitialClickListener, view, day, row, column);
+        return new SenderViewHolder(context, senderNameInitialClickListener, view, day, row, column);
     }
 
     @NonNull
@@ -69,12 +60,6 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
 
     @Override
     public void onBindParentViewHolder(@NonNull SenderViewHolder holder, int position, @NonNull CurrentDayMessageSendersRealmList parent) {
-        /*
-        String senderNameInitial = currentDayMessagesList.get(position).getSender().substring(0,1).toUpperCase();
-        String senderEmailCount = Integer.toString( currentDayMessagesList.get(position).getSenderCurrentDayMessageList().size() );
-        holder.emailSenderInitial.setText(senderNameInitial);
-        holder.emailCount.setText(senderEmailCount);
-        */
         holder.bind(parent);
     }
 
@@ -83,17 +68,5 @@ public class EmailTilesAdapter extends ExpandableRecyclerAdapter<CurrentDayMessa
 
         holder.bind(child);
     }
-/*
-    @Override
-    public void onBindViewHolder(EmailTilesAdapter.ViewHolder holder, int position) {
-
-        String senderNameInitial = currentDayMessagesList.get(position).getSender().substring(0,1).toUpperCase();
-        String senderEmailCount = Integer.toString( currentDayMessagesList.get(position).getSenderCurrentDayMessageList().size() );
-        holder.emailSenderInitial.setText(senderNameInitial);
-        holder.emailCount.setText(senderEmailCount);
-    }
-*/
-
-
 }
 

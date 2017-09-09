@@ -16,6 +16,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.example.android.easymail.models.Message;
+import com.example.android.easymail.utils.AlarmReceiver;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -42,23 +43,17 @@ public class AlarmReceiverActivity extends AppCompatActivity implements MediaPla
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_alarm_receiver);
 
-        /**
-         * get an instance of realm to find the subject
-         * of the message saved in the custom list.
-         */
+        // get an instance of realm to find the subject
+        // of the message saved in the custom list.
         RealmConfiguration configuration = new RealmConfiguration.Builder().build();
         realm = Realm.getInstance(configuration);
 
-        /**
-         * get the id of the message from the intent extra
-         * to get the message from realm db.
-         */
+        // get the id of the message from the intent extra
+        // to get the message from realm db.
         String messageId = (String) getIntent().getExtras().get("id");
         int notificationId = (int) getIntent().getExtras().get("notif_id");
 
-        /**
-         * get the appropriate message from realm results
-         */
+        // get the appropriate message from realm results
         RealmResults<Message> results = realm.where(Message.class).equalTo("id", messageId).findAll();
         message = realm.copyFromRealm(results).get(0);
         initMediaPlayer();

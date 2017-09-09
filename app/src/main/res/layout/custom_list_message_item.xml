@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/custom_list_message_subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:textSize="16sp"
+        tools:text="This is the message subject."/>
+    <TextView
+        android:id="@+id/custom_list_message_notes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:textSize="16sp"
+        tools:text="This is the message notes and are meant to be big."/>
+    <TextView
+        android:id="@+id/custom_list_message_alarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:textSize="16sp"
+        android:layout_gravity="end"
+        tools:text="15 April 2020, 11:50 PM"/>
+    <TextView
+        android:id="@+id/custom_list_message_notif"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:textSize="16sp"
+        android:layout_gravity="end"
+        tools:text="15 April 2020, 11:50 PM"/>
+</LinearLayout>

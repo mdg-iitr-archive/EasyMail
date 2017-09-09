@@ -1,8 +1,10 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
+import com.example.android.easymail.AlarmReceiverActivity;
 
 /**
  * Created by Harshit Bansal on 7/16/2017.

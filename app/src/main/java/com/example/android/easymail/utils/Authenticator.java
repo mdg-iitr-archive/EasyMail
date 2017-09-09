@@ -1,4 +1,4 @@
-package com.example.android.easymail;
+package com.example.android.easymail.utils;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+
+import com.example.android.easymail.MainActivity;
 
 /**
  * Created by Harshit Bansal on 6/22/2017.

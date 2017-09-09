@@ -10,6 +10,8 @@ import android.os.Bundle;
 
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.models.Time;
+import com.example.android.easymail.utils.AlarmReceiver;
+import com.example.android.easymail.utils.NotificationReceiver;
 
 import java.util.Calendar;
 

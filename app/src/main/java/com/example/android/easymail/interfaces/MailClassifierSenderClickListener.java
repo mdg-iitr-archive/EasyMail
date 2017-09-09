@@ -6,5 +6,5 @@ package com.example.android.easymail.interfaces;
 
 public interface MailClassifierSenderClickListener {
 
-    void onSenderClicked(String sender);
+    void onSenderClicked(int position, String sender);
 }
