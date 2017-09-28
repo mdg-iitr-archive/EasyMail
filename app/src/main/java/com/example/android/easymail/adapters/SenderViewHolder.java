@@ -33,13 +33,14 @@ public class SenderViewHolder extends ParentViewHolder {
 
     private Context context;
     private ImageView emailSenderPhoto;
-    private TextView emailCount, emailSenderName;
+    private TextView emailCount, emailSenderNameInitial, emailSenderName;
 
     public SenderViewHolder(Context context, final SenderNameInitialClickListener listener, View itemView, final int day, final int row, final int column) {
         super(itemView);
         this.context = context;
         emailSenderPhoto = (ImageView) itemView.findViewById(R.id.sender_photo);
         emailCount = (TextView) itemView.findViewById(R.id.email_number);
+        emailSenderNameInitial = (TextView) itemView.findViewById(R.id.email_sender_name_initial);
         emailSenderName = (TextView) itemView.findViewById(R.id.email_sender_name);
         emailSenderPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,6 +61,7 @@ public class SenderViewHolder extends ParentViewHolder {
         String senderEmailCount = Integer.toString
                 (currentDayMessageSendersList.getSenderCurrentDayMessageList().size());
         emailCount.setText(senderEmailCount);
+        emailSenderNameInitial.setText(sender.substring(0,1).toUpperCase());
         String senderEmail = null;
         try {
             String senderName = sender.split("<")[0];
@@ -81,6 +83,7 @@ public class SenderViewHolder extends ParentViewHolder {
                             String photoUrl = response.body().getAsJsonObject("entry")
                                     .getAsJsonObject("gphoto$thumbnail").get("$t").getAsString();
                             Picasso.with(context).load(photoUrl).into(emailSenderPhoto);
+                        emailSenderNameInitial.setVisibility(View.INVISIBLE);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
