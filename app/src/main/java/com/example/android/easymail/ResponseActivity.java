@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -116,18 +117,7 @@ public class ResponseActivity extends AppCompatActivity implements
                     AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
                     AuthorizationService service = new AuthorizationService(context);
                     // obtain the fresh access token from the auth state
-                    state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
-                        @Override
-                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-                            if (ex == null) {
-                                token = accessToken;
-                                responsePresenter.performTokenRequest(null, token);
-                            } else {
-                                Log.e("auth token exception", ex.toString());
-                            }
-                        }
-                    });
-                    Log.d("easymail", "GetToken Bundle is " + bnd);
+                    new RequestAccessToken(state).execute();
                 } catch (Exception e) {
                     e.printStackTrace();
                     accountManager.removeAccount(ACCOUNT,  this, null, null);
@@ -365,6 +355,35 @@ public class ResponseActivity extends AppCompatActivity implements
                 break;
         }
         return true;
+    }
+
+    public class RequestAccessToken extends AsyncTask<Void, Void, Void> {
+
+        AuthState authState;
+        public RequestAccessToken(AuthState state){
+            authState = state;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            AuthorizationService service = new AuthorizationService(context);
+
+            // obtain the fresh access token from the auth state
+            authState.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
+                @Override
+                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                    if (ex == null) {
+                        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
+                        serviceIntent.putExtra("token", accessToken);
+                        startService(serviceIntent);
+                    } else {
+                        Log.e("auth token exception", ex.toString());
+                    }
+                }
+            });
+            Log.d("easymail", "GetToken Bundle is ");
+            return null;
+        }
     }
 
     /**

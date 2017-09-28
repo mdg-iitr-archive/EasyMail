@@ -78,9 +78,9 @@ public class EmailGridViewAdapter extends BaseAdapter {
         }
         String senderNameInitial = currentDayMessagesList.get(position).getSender().substring(0, 1).toUpperCase();
         String senderEmailCount = Integer.toString( currentDayMessagesList.get(position).getSenderCurrentDayMessageList().size() );
-        TextView emailSenderInitial = (TextView) view.findViewById(R.id.email_item_name_initial);
+        //TextView emailSenderInitial = (TextView) view.findViewById(R.id.email_item_name_initial);
         TextView emailCount = (TextView) view.findViewById(R.id.email_number);
-        emailSenderInitial.setText(senderNameInitial);
+        //emailSenderInitial.setText(senderNameInitial);
         emailCount.setText(senderEmailCount);
         return view;
     }

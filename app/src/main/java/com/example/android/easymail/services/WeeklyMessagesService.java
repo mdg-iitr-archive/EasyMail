@@ -182,7 +182,7 @@ public class WeeklyMessagesService extends IntentService {
 
             if (day1.get(i).getIsStored() == 0) {
 
-                String sender;
+                String sender = null;
                 // download the message and check the date difference.
                 String id = day1.get(i).getId();
                 Message message = null;
@@ -297,8 +297,8 @@ public class WeeklyMessagesService extends IntentService {
                         day1.get(i).setIsStored(1);
                         realm.beginTransaction();
                         realm.copyToRealmOrUpdate(modifiedMessage);
-                        realm.copyToRealmOrUpdate(day1);
-                        realm.copyToRealmOrUpdate(senders);
+                        realm.copyToRealmOrUpdate(day1.get(i));
+                        realm.copyToRealmOrUpdate(new Sender(sender));
                         realm.commitTransaction();
                     }
                 }
