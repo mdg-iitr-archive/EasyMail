@@ -45,6 +45,6 @@ public class SyncService extends Service {
          * in the base class code when the SyncAdapter
          * constructors call super()
          */
-        return sSyncAdapter.getSyncAdapterBinder();
+            return sSyncAdapter.getSyncAdapterBinder();
     }
 }
