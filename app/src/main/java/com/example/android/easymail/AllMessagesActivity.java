@@ -237,7 +237,7 @@ public class AllMessagesActivity extends AppCompatActivity implements MailClassi
             store = null;
             try {
                 store = session.getStore("imaps");
-                store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "harshit1206");
+                store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "");
                 javax.mail.Folder[] folders = store.getDefaultFolder().list("*");
                 for (javax.mail.Folder folder : folders) {
                     if ((folder.getType() & javax.mail.Folder.HOLDS_MESSAGES) != 0) {

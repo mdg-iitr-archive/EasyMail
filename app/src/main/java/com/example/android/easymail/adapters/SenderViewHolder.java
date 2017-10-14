@@ -13,11 +13,13 @@ import com.example.android.easymail.api.MessageApi;
 import com.example.android.easymail.api.NetworkingFactory;
 import com.example.android.easymail.interfaces.SenderNameInitialClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
+import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,13 +33,14 @@ public class SenderViewHolder extends ParentViewHolder {
 
     private Context context;
     private ImageView emailSenderPhoto;
-    private TextView emailCount, emailSenderName;
+    private TextView emailCount, emailSenderNameInitial, emailSenderName;
 
     public SenderViewHolder(Context context, final SenderNameInitialClickListener listener, View itemView, final int day, final int row, final int column) {
         super(itemView);
         this.context = context;
         emailSenderPhoto = (ImageView) itemView.findViewById(R.id.sender_photo);
         emailCount = (TextView) itemView.findViewById(R.id.email_number);
+        emailSenderNameInitial = (TextView) itemView.findViewById(R.id.email_sender_name_initial);
         emailSenderName = (TextView) itemView.findViewById(R.id.email_sender_name);
         emailSenderPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,29 +57,44 @@ public class SenderViewHolder extends ParentViewHolder {
     }
 
     public void bind(CurrentDayMessageSendersRealmList currentDayMessageSendersList){
-        String senderName = currentDayMessageSendersList.getSender();
-        String senderEmailCount = Integer.toString( currentDayMessageSendersList.getSenderCurrentDayMessageList().size() );
-        Retrofit retrofit = NetworkingFactory.getClient();
-        MessageApi messageApi = retrofit.create(MessageApi.class);
-        Call<JSONObject> userInfoCall = messageApi.getUserInfo(senderName);
-        userInfoCall.enqueue(new Callback<JSONObject>() {
-            @Override
-            public void onResponse(@NonNull Call<JSONObject> call, @NonNull Response<JSONObject> response) {
-                try {
-                    String photoUrl = response.body().getJSONObject("entry")
-                            .getJSONObject("gphoto$thumbnail").getString("$t");
-                    Picasso.with(context).load(photoUrl).into(emailSenderPhoto);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<JSONObject> call, @NonNull Throwable t) {
-                Log.e("User Info Retrival Fail", t.toString());
-            }
-        });
+        String sender = currentDayMessageSendersList.getSender();
+        String senderEmailCount = Integer.toString
+                (currentDayMessageSendersList.getSenderCurrentDayMessageList().size());
         emailCount.setText(senderEmailCount);
+        emailSenderNameInitial.setText(sender.substring(0,1).toUpperCase());
+        String senderEmail = null;
+        try {
+            String senderName = sender.split("<")[0];
+            emailSenderName.setText(senderName);
+            senderEmail = sender.split("<")[1].split(">")[0];
+        }catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+            emailSenderName.setText(sender);
+        }
+        if (senderEmail != null) {
+            Retrofit retrofit = NetworkingFactory.getClient();
+            MessageApi messageApi = retrofit.create(MessageApi.class);
+            Call<JsonObject> userInfoCall = messageApi.getUserInfo(senderEmail);
+            userInfoCall.enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                    try {
+                            String body = response.body().toString();
+                            String photoUrl = response.body().getAsJsonObject("entry")
+                                    .getAsJsonObject("gphoto$thumbnail").get("$t").getAsString();
+                            Picasso.with(context).load(photoUrl).into(emailSenderPhoto);
+                        emailSenderNameInitial.setVisibility(View.INVISIBLE);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                    Log.e("User Info Retrival Fail", t.toString());
+                }
+            });
+        }
     }
 
     @Override

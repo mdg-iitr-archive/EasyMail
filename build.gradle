@@ -4,7 +4,7 @@ buildscript {
     repositories {
         jcenter()
         maven {
-            url "https://maven.java.net/content/groups/public/"
+            url 'https://maven.google.com'
         }
     }
     dependencies {

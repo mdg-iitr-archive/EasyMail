@@ -109,42 +109,8 @@ public class ResponseActivity extends AppCompatActivity implements
                 // first get the offline available messages
                 responsePresenter.getOfflineMessages();
                 // account is present, thus get the deserialized auth state
-                ACCOUNT =  accountList[0];
-                final AccountManagerFuture<Bundle> future = accountManager.getAuthToken(ACCOUNT, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, this, null, null);
-                try {
-                    Bundle bnd = future.getResult();
-                    final String deserializedAuthState = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                    AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
-                    AuthorizationService service = new AuthorizationService(context);
-                    final ResponseActivityView instance = this;
-                    new RequestAccessToken(state).execute();
-                }
-                    /*
-                    // obtain the fresh access token from the auth state
-                    state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
-                        @Override
-                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-                            if (ex == null) {
-                                new RequestAccessToken()
-                                //responsePresenter = new ResponsePresenterImpl(instance, new ResponseInteractorImpl(), ResponseActivity.this, getApplication());
-                                //final AuthorizationResponse response = AuthorizationResponse.fromIntent(getIntent());
-                                //final AuthorizationException exception = AuthorizationException.fromIntent(getIntent());
-                                //responsePresenter.getOfflineMessages();
-                                //responsePresenter.performTokenRequest(response, accessToken);
-                            } else {
-                                Log.e("auth token exception", ex.toString());
-                            }
-                        }
-                    });
-                    Log.d("easymail", "GetToken Bundle is " + bnd);
-                }
-                */catch (Exception e) {
-                    e.printStackTrace();
-                    accountManager.removeAccount(ACCOUNT,  this, null, null);
-                    accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
-                            , null, this, null, null);
-                }
-
+                // get the account from account manager in async state
+                new RequestAccessToken(accountList[0]).execute();
             }
         }
         mResolver = getContentResolver();
@@ -298,8 +264,9 @@ public class ResponseActivity extends AppCompatActivity implements
     @Override
     public void appendLinearLayout(int linearLayoutId) {
         LinearLayout layout = (LinearLayout) findViewById(linearLayoutId);
-        if (layout != null)
+        if (layout != null) {
             linearLayout.addView(layout);
+        }
     }
 
     @Override
@@ -378,109 +345,62 @@ public class ResponseActivity extends AppCompatActivity implements
         return true;
     }
 
-    public void refresh(View view) {
+    public class RequestAccessToken extends AsyncTask<Void, Bundle, Bundle> {
 
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(
-                ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(
-                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(ACCOUNT, AUTHORITY, settingsBundle);
-    }
+        private Account account;
 
-    public class RequestAccessToken extends AsyncTask<Void, Void, Void>{
-
-        AuthState authState;
-        public RequestAccessToken(AuthState state){
-            authState = state;
+        public RequestAccessToken(Account account) {
+            this.account = account;
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
-            AuthorizationService service = new AuthorizationService(context);
+        protected Bundle doInBackground(Void... params) {
+            final AccountManagerFuture<Bundle> future = accountManager.getAuthToken
+                    (account, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null, ResponseActivity.this, null, null);
+            Bundle bnd = null;
+            try {
+                bnd = future.getResult();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return bnd;
+        }
 
+        @Override
+        protected void onPostExecute(Bundle bundle) {
+            super.onPostExecute(bundle);
+            performTokenRequest(bundle);
+        }
+    }
+
+    /**
+     * To get new messages using fresh access token
+     * @param bundle Used to obtain deserialized auth state
+     */
+    private void performTokenRequest(Bundle bundle) {
+        try {
+            final String deserializedAuthState = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+            AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
+            AuthorizationService service = new AuthorizationService(context);
             // obtain the fresh access token from the auth state
-            authState.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
+            state.performActionWithFreshTokens(service, new AuthState.AuthStateAction() {
                 @Override
                 public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
                     if (ex == null) {
-                        Intent serviceIntent = new Intent(ResponseActivity.this, MessagesPullService.class);
-                        serviceIntent.putExtra("token", accessToken);
-                        startService(serviceIntent);
+                        token = accessToken;
+                        responsePresenter.performTokenRequest(null, token);
                     } else {
                         Log.e("auth token exception", ex.toString());
                     }
                 }
             });
             Log.d("easymail", "GetToken Bundle is ");
-            return null;
+        }catch (Exception e){
+            e.printStackTrace();
+            accountManager.removeAccount(ACCOUNT, this, null, null);
+            accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
+                    , null, ResponseActivity.this, null, null);
         }
-    }
-
-       /*
-        credential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(), Arrays.asList(scopes)).
-                setBackOff(new ExponentialBackOff());
-
-        if( isAutoSignedInToken != null ){
-            performTask(isAutoSignedInToken);
-        }
-
-        if (response != null){
-            //authorization succeeded\\
-            Toast.makeText(context, "Authorization response completed", Toast.LENGTH_SHORT).show();
-            AuthorizationService service = new AuthorizationService(context);
-            service.performTokenRequest(
-                    response.createTokenExchangeRequest(),
-                    new AuthorizationService.TokenResponseCallback() {
-                        @Override
-                        public void onTokenRequestCompleted(@Nullable TokenResponse resp, @Nullable AuthorizationException ex) {
-                            if (resp != null) {
-                                //exchange succeeded\\
-                                Toast.makeText(context, "Token Request Completed", Toast.LENGTH_SHORT).show();
-                                accessToken = resp.accessToken;
-                                AuthState state = new AuthState(response, resp, ex);
-                                writeAuthState(state);
-                                performTask(accessToken);
-                            }
-                            else {
-                                //exchange failed\\
-                                responseText.setText(response.toString());
-                                Toast.makeText(context, "Token Response Failed", Toast.LENGTH_SHORT).show();
-                                AuthState state = new AuthState(response, null, ex);
-                                writeAuthState(state);
-                            }
-                        }
-                    }
-            );
-
-        }
-        else {
-            //authorization failed\\
-            Toast.makeText(context, "Authorization response failed", Toast.LENGTH_SHORT).show();
-        }
-
-    }
-
-    private void regListeners() {
-    }
-
-
-    private void initViews(){
-
-        hashTable = new HashTable(HASH_TABLE_SIZE);
-        currentDayMessages = new ArrayList<Message>();
-        currentDayMessageSendersList = new ArrayList<>();
-
-        responseText = (TextView) findViewById(R.id.txt_response);
-        tokenText = (TextView) findViewById(R.id.txt_token);
-        emailNameInitialRecycler = (RecyclerView) findViewById(R.id.email_name_tile_recycler);
-        emailNameInitialRecycler.setHasFixedSize(true);
-        emailNameInitialGridView = (ExpandableGridView) findViewById(R.id.email_name_tile_grid_view);
-
-        linearLayout = (LinearLayout) findViewById(R.id.layout);
-        //RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ResponseActivity.this);
-        //emailNameInitialRecycler.setLayoutManager(layoutManager);
     }
 
     /**

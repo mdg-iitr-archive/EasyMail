@@ -147,7 +147,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements Message
             Session session = Session.getDefaultInstance(props, null);
             try {
                 store = session.getStore("imaps");
-                store.connect("imap.googlemail.com", "harshit.bansalec@gmail.com", "harshit1206");
+                store.connect("imap.googlemail.com", "harshit.bansalec@gmail.com", "");
                 folder = store.getFolder("inbox"); // This does work for other email account
                 UIDFolder uidFolder = (UIDFolder) folder;
                 if (!folder.isOpen()) folder.open(Folder.READ_WRITE);

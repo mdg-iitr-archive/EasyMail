@@ -68,14 +68,14 @@ public class MessagesPullService extends IntentService {
             Session session = Session.getDefaultInstance(props, null);
 
             Store store = session.getStore("imaps");
-            store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "harshit1206");
+            store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "");
 
             Folder folder = store.getFolder("inbox"); // This does work for other email account
 
             if(!folder.isOpen())
                 folder.open(Folder.READ_WRITE);
             SearchTerm sender = new FromTerm(new InternetAddress("moodle@brijeshkumar.com"));
-            javax.mail.Message[] messages = folder.search(sender);
+            javax.mail.Message[] messages = folder.getMessages();
             System.out.println("No of Messages : " + folder.getMessageCount());
             System.out.println("No of Unread Messages : " + folder.getUnreadMessageCount());
             System.out.println(messages.length);
