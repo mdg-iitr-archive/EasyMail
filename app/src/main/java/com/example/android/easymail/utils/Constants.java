@@ -1,5 +1,8 @@
 package com.example.android.easymail.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Harshit Bansal on 6/21/2017.
  */
@@ -8,6 +11,9 @@ public class Constants {
 
     public static final String BROADCAST_ACTION =
             "com.example.android.thread.BROADCAST";
+
+    public static final String BROADCAST_ACTION_EMAIL =
+            "com.example.android.thread.BROADCAST_EMAIL";
 
     public static final String EXTENDED_DATA_STATUS =
             "com.example.android.thread.STATUS";
@@ -40,6 +46,21 @@ public class Constants {
      * Sender information url
      */
     public static final String SENDER_INFO_URL = "http://picasaweb.google.com/data/entry/api/user/<hereYourUserIdOrYourEmail>?alt=json";
+
+    /**
+     * Normal email label
+     */
+    public static final String PRIMARY_LABEL = "CATEGORY_PERSONAL";
+
+    /**
+     * Subscription email query
+     */
+    public static final String SUBSCRIPTION_QUERY = "\"opt-out\" OR unsubscribe OR \"viewing the newsletter\" OR \"privacy policy\" OR enews OR \"edit your preferences\" OR \"email notifications\" OR \"update profile\" OR smartunsubscribe OR secureunsubscribe OR yahoogroups OR \"manage your account\" OR \"group-digests";
+
+    /**
+     * Format string for getting metadata only
+     */
+    public static final String METADATA_STRING = "metadata";
 
     /**
      * Retrieve original information url of sender

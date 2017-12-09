@@ -121,4 +121,12 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="auto_download_attachment_title">Auto Download Attachments</string>
     <string name="auto_download_attachment_summary">Automatically downloads the attachments from all the contacts.</string>
+    <string-array name="metadata_headers_list">
+        <item>Delivered-To</item>
+        <item>From</item>
+        <item>Date</item>
+        <item>Subject</item>
+        <item>MIME-Version</item>
+        <item>Content-Type</item>
+    </string-array>
 </resources>

@@ -20,13 +20,23 @@ public class Message extends RealmObject {
 
     @PrimaryKey
     private String id;
+    private String pageToken;
     private String threadId;
     private String snippet;
+    private Long internalDate;
     private String sender;
     private RealmList<RealmString> labelIds;
     private MessagePayload payload;
     private String customListName;
     private CustomListDetails customListDetails;
+
+    public Long getInternalDate() {
+        return internalDate;
+    }
+
+    public void setInternalDate(Long internalDate) {
+        this.internalDate = internalDate;
+    }
 
     public String getThreadId() {
         return threadId;
@@ -94,5 +104,13 @@ public class Message extends RealmObject {
 
     public void setCustomListName(String customListName) {
         this.customListName = customListName;
+    }
+
+    public String getPageToken() {
+        return pageToken;
+    }
+
+    public void setPageToken(String pageToken) {
+        this.pageToken = pageToken;
     }
 }
