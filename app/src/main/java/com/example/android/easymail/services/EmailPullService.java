@@ -38,24 +38,19 @@ public class EmailPullService extends IntentService {
 
     private Realm realm;
     private Long totalCount;
-    private Long count;
+    private Long count = 0L;
 
-    public EmailPullService(String name) {
-        super(name);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public EmailPullService() {
+        super("");
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        Realm realm = Realm.getDefaultInstance();
+        realm = Realm.getDefaultInstance();
         String accessToken = (String) intent.getExtras().get("token");
         String pageToken = (String) intent.getExtras().get("page_token");
+        Long failedEmailNumber = (Long) intent.getExtras().get("failed_email_number");
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -66,21 +61,29 @@ public class EmailPullService extends IntentService {
         String nextPageToken = null;
         try {
             List<String> labelIds = new ArrayList<>();
-            labelIds.add(Constants.PRIMARY_LABEL);
+            labelIds.add(Constants.UPDATES_LABEL);
             ListMessagesResponse listMessagesResponse =
-                    service.users().messages().list(user).setLabelIds(labelIds).setPageToken(pageToken)
-                            .setQ(Constants.SUBSCRIPTION_QUERY).execute();
+                    service.users().messages().list(user).setLabelIds(labelIds)
+                            .setMaxResults(50L).setPageToken(pageToken).execute();
             nextPageToken = listMessagesResponse.getNextPageToken();
-            totalCount = listMessagesResponse.getResultSizeEstimate();
+            totalCount = listMessagesResponse.getResultSizeEstimate() - 2;
+            if (failedEmailNumber != 1000L){
+                totalCount = totalCount - failedEmailNumber;
+            }
             List<Message> messages = listMessagesResponse.getMessages();
-            for (Message message : messages){
-                parseGmailMessage(service, user, message.getId(), pageToken);
+            long i = failedEmailNumber;
+            if (failedEmailNumber == 1000L){
+                i = 0;
+            }
+            for (; i <  messages.size(); i++){
+                Message message = messages.get((int)i);
+                parseGmailMessage(service, user, nextPageToken, message.getId(), pageToken);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         String status;
-        Long failedEmailNumber = 1000L;
+        failedEmailNumber = 1000L;
         if (Objects.equals(count, totalCount)) status = "success";
         else{
             status = "failure";
@@ -95,7 +98,7 @@ public class EmailPullService extends IntentService {
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    private void parseGmailMessage(Gmail service, String user, String messageId, String pageToken) {
+    private void parseGmailMessage(Gmail service, String user, String nextPageToken, String messageId, String pageToken) {
         String sender;
         Message message = null;
         try {
@@ -110,7 +113,7 @@ public class EmailPullService extends IntentService {
             com.example.android.easymail.models.Message modifiedMessage = new com.example.android.easymail.models.Message();
             modifiedMessage.setId(message.getId());
             modifiedMessage.setThreadId(message.getThreadId());
-            modifiedMessage.setPageToken(pageToken);
+            modifiedMessage.setPageToken(nextPageToken);
             RealmList<RealmString> stringList = new RealmList<>();
             for (String labelId : message.getLabelIds()) {
                 stringList.add(new RealmString(labelId));

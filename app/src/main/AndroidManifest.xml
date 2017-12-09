@@ -72,7 +72,7 @@
 
         <!-- sync adapter service ! -->
         <service
-            android:name="com.example.android.easymail.SyncService"
+            android:name=".SyncService"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -92,13 +92,16 @@
 
         <service android:name=".services.NotificationService" />
         <service android:name=".services.WeeklyMessagesService" />
+        <service android:name=".services.EmailPullService"
+            android:exported="false"/>
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity android:name=".AlarmReceiverActivity" />
         <activity android:name=".AllAttachmentsActivity" />
-        <activity android:name=".DisplayMessageActivity"></activity>
+        <activity android:name=".DisplayMessageActivity" />
+        <activity android:name=".HomeActivity"></activity>
     </application>
 
 </manifest>

@@ -86,7 +86,7 @@ public class ResponseActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_response);
-
+        initRealm();
         initViews();
         regListeners();
         getSavedPreferences();
@@ -107,7 +107,7 @@ public class ResponseActivity extends AppCompatActivity implements
                         , null, this, null, null);
             } else {
                 // first get the offline available messages
-                responsePresenter.getOfflineMessages();
+                // responsePresenter.getOfflineMessages();
                 // account is present, thus get the deserialized auth state
                 // get the account from account manager in async state
                 new RequestAccessToken(accountList[0]).execute();
@@ -127,6 +127,12 @@ public class ResponseActivity extends AppCompatActivity implements
                 }
                 break;
         }
+    }
+
+    private void initRealm() {
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder().name("myrealm.realm").build();
+        Realm.setDefaultConfiguration(config);
     }
 
     /**
@@ -369,7 +375,7 @@ public class ResponseActivity extends AppCompatActivity implements
         @Override
         protected void onPostExecute(Bundle bundle) {
             super.onPostExecute(bundle);
-            performTokenRequest(bundle);
+            performTokenRequest(account, bundle);
         }
     }
 
@@ -377,7 +383,7 @@ public class ResponseActivity extends AppCompatActivity implements
      * To get new messages using fresh access token
      * @param bundle Used to obtain deserialized auth state
      */
-    private void performTokenRequest(Bundle bundle) {
+    private void performTokenRequest(final Account account, Bundle bundle) {
         try {
             final String deserializedAuthState = bundle.getString(AccountManager.KEY_AUTHTOKEN);
             AuthState state = AuthState.jsonDeserialize(deserializedAuthState);
@@ -388,9 +394,15 @@ public class ResponseActivity extends AppCompatActivity implements
                 public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
                     if (ex == null) {
                         token = accessToken;
-                        responsePresenter.performTokenRequest(null, token);
+                        Intent homeIntent = new Intent(ResponseActivity.this, HomeActivity.class);
+                        homeIntent.putExtra("token", token);
+                        startActivity(homeIntent);
+                        // responsePresenter.performTokenRequest(null, token);
                     } else {
                         Log.e("auth token exception", ex.toString());
+                        accountManager.removeAccount(account, ResponseActivity.this, null, null);
+                        accountManager.addAccount(Constants.ACCOUNT_TYPE, Constants.AUTHTOKEN_TYPE_FULL_ACCESS, null
+                                , null, ResponseActivity.this, null, null);
                     }
                 }
             });

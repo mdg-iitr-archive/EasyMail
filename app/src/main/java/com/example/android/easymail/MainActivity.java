@@ -40,6 +40,9 @@ import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+
 
 public class MainActivity extends AccountAuthenticatorActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -73,6 +76,7 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
         Scope scope = new Scope("https://www.googleapis.com/auth/gmail.readonly");
 
         initViews();
+        initRealm();
         regListeners();
         checkRequiredAvailability();
 
@@ -147,6 +151,12 @@ public class MainActivity extends AccountAuthenticatorActivity implements Google
             });
         }
      */
+    }
+
+    private void initRealm() {
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder().name("myrealm.realm").build();
+        Realm.setDefaultConfiguration(config);
     }
 
     private void regListeners() {

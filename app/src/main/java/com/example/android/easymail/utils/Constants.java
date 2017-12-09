@@ -53,6 +53,11 @@ public class Constants {
     public static final String PRIMARY_LABEL = "CATEGORY_PERSONAL";
 
     /**
+     * Updates email label
+     */
+    public static final String UPDATES_LABEL = "CATEGORY_UPDATES";
+
+    /**
      * Subscription email query
      */
     public static final String SUBSCRIPTION_QUERY = "\"opt-out\" OR unsubscribe OR \"viewing the newsletter\" OR \"privacy policy\" OR enews OR \"edit your preferences\" OR \"email notifications\" OR \"update profile\" OR smartunsubscribe OR secureunsubscribe OR yahoogroups OR \"manage your account\" OR \"group-digests";

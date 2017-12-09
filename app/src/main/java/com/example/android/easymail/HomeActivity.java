@@ -13,21 +13,25 @@ import android.support.v7.widget.RecyclerView;
 
 import com.example.android.easymail.adapters.EmailAdapter;
 import com.example.android.easymail.interfaces.EndlessScrollListener;
+import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.services.EmailPullService;
 import com.example.android.easymail.utils.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 public class HomeActivity extends AppCompatActivity {
 
     private RecyclerView emailRecyclerView;
-    private String accessToken, currentPageToken;
+    private String accessToken;
     private Realm realm;
     private EmailAdapter emailAdapter;
+    List<CurrentDayMessageSendersRealmList> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +40,19 @@ public class HomeActivity extends AppCompatActivity {
         initViews();
         initRealm();
         initRecycler();
-        currentPageToken = getPageToken();
         accessToken = (String) getIntent().getExtras().get("token");
-        if (accessToken != null){
-            Intent emailPullIntent = new Intent(this, EmailPullService.class);
-            emailPullIntent.putExtra("token", accessToken);
-            emailPullIntent.putExtra("page_token", currentPageToken);
-            startService(emailPullIntent);
+        // display the offline messages first
+        int offlineMessagesSize = getOfflineMessages();
+        if (offlineMessagesSize == 0) {
+            if (accessToken != null) {
+                Intent emailPullIntent = new Intent(this, EmailPullService.class);
+                emailPullIntent.putExtra("token", accessToken);
+                // getPageToken() always returns null in this case
+                emailPullIntent.putExtra("page_token", getPageToken());
+                // getFailedEmailNumber() always returns 1000L in this case
+                emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
+                startService(emailPullIntent);
+            }
         }
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -50,11 +60,11 @@ public class HomeActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if ((Long) intent.getExtras().get("failed_email_number") == 1000L){
                     writeFailedEmailNumber(1000L);
-                    writePageToken((String) intent.getExtras().get("next_page_token"));
+                    writeFailedPageToken(getPageToken());
                 }else{
                     writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
-                    writePageToken(currentPageToken);
                 }
+                writePageToken((String) intent.getExtras().get("next_page_token"));
                 showCurrentPageMails();
             }
         };
@@ -67,12 +77,19 @@ public class HomeActivity extends AppCompatActivity {
     private void initRecycler() {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         emailRecyclerView.setLayoutManager(layoutManager);
+        emailAdapter = new EmailAdapter(this, list);
+        emailRecyclerView.setAdapter(emailAdapter);
         emailRecyclerView.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 Intent emailPullIntent = new Intent(HomeActivity.this, EmailPullService.class);
                 emailPullIntent.putExtra("token", accessToken);
-                emailPullIntent.putExtra("page_token", currentPageToken);
+                if (getFailedEmailNumber() == 1000L) {
+                    emailPullIntent.putExtra("page_token", getPageToken());
+                }else{
+                    emailPullIntent.putExtra("page_token", getFailedPageToken());
+                }
+                emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
                 startService(emailPullIntent);
             }
         });
@@ -89,10 +106,21 @@ public class HomeActivity extends AppCompatActivity {
         realm = Realm.getDefaultInstance();
     }
 
+    /**
+     * TODO: needs work for repeated filters
+     */
     private void showCurrentPageMails() {
-        RealmResults<Message> response = realm.where(Message.class).equalTo("pageToken", currentPageToken).findAll();
+        RealmResults<Message> response = realm.where(Message.class).equalTo("pageToken", getPageToken()).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
-
+        for (Message message : messages){
+            RealmList<Message> messageList = new RealmList<>();
+            messageList.add(message);
+            CurrentDayMessageSendersRealmList currentDayMessageSendersRealmList =
+                    new CurrentDayMessageSendersRealmList(message.getSender(), messageList);
+            list.add(currentDayMessageSendersRealmList);
+        }
+        emailAdapter.setParentList(list);
+        emailAdapter.notifyParentDataSetChanged(true);
     }
 
     private String getPageToken() {
@@ -107,10 +135,42 @@ public class HomeActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    private String getFailedPageToken() {
+        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+        return preferences.getString("failedPageToken", null);
+    }
+
+    private void writeFailedPageToken(String pageToken){
+        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("failedPageToken", pageToken);
+        editor.apply();
+    }
+
     private void writeFailedEmailNumber(Long failedEmailNumber) {
         SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong("failedEmailNumber", failedEmailNumber);
         editor.apply();
+    }
+
+    private Long getFailedEmailNumber() {
+        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+        return preferences.getLong("failedEmailNumber", 1000L);
+    }
+
+    private int getOfflineMessages() {
+        RealmResults<Message> response = realm.where(Message.class).findAll();
+        List<Message> messages =  realm.copyFromRealm(response);
+        for (Message message : messages){
+            RealmList<Message> messageList = new RealmList<>();
+            messageList.add(message);
+            CurrentDayMessageSendersRealmList currentDayMessageSendersRealmList =
+                    new CurrentDayMessageSendersRealmList(message.getSender(), messageList);
+            list.add(currentDayMessageSendersRealmList);
+        }
+        emailAdapter.setParentList(list);
+        emailAdapter.notifyParentDataSetChanged(true);
+        return list.size();
     }
 }
