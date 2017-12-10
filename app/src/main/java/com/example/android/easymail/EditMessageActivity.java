@@ -45,8 +45,7 @@ public class EditMessageActivity extends AppCompatActivity implements DatePicker
         setContentView(R.layout.activity_edit_message);
         actionBar = getSupportActionBar();
         initViews();
-        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
-        realm = Realm.getInstance(configuration);
+        realm = Realm.getDefaultInstance();
         listName = getIntent().getExtras().getString("listName");
         String messageId = (String) getIntent().getExtras().get("messageId");
         RealmResults<Message> results = realm.where(com.example.android.easymail.models.Message.class).equalTo("id", messageId).findAll();

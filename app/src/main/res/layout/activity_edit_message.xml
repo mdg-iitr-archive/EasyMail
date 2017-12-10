@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_edit_message"
     android:layout_width="match_parent"
@@ -10,58 +11,46 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.android.easymail.EditMessageActivity">
 
-    <TextView
-        android:id="@+id/text_subject"
-        android:layout_width="wrap_content"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/subject_input_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/subject">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_subject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:inputType="text"
+            tools:text="My Subject"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/notes_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/subject_input_layout"
         android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:labelFor="@+id/edit_subject"
-        android:text="@string/txt_subject"/>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/text_subject"
-        android:layout_marginStart="16dp"
-        />
-    <EditText
-        android:id="@+id/edit_subject"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/text_subject"
-        android:layout_marginStart="16dp"
-        android:inputType="text"
-        tools:text="My Subject"/>
-    <TextView
-        android:id="@+id/text_notes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_below="@+id/edit_subject"
-        android:labelFor="@+id/edit_notes"
-        android:text="@string/txt_notes"/>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/text_notes"
-        android:layout_marginStart="16dp"
-        />
-    <EditText
+        android:hint="@string/notes">
+
+    <android.support.design.widget.TextInputEditText
         android:id="@+id/edit_notes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_notes"
         android:layout_marginStart="16dp"
         android:inputType="text"
         tools:text="My Notes"/>
+    </android.support.design.widget.TextInputLayout>
+
     <CheckBox
         android:id="@+id/show_notif_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/edit_notes"
-        android:layout_marginTop="16dp"
+        android:layout_below="@+id/notes_input_layout"
+        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp" />
+
     <TextView
         android:id="@+id/text_show_notif"
         android:layout_width="wrap_content"
@@ -70,59 +59,70 @@
         android:layout_alignBaseline="@+id/show_notif_checkbox"
         android:layout_toEndOf="@+id/show_notif_checkbox"
         android:text="@string/txt_alarm"/>
-    <TextView
-        android:id="@+id/text_date"
+
+    <ImageView
+        android:id="@+id/date_picker_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
         android:layout_below="@+id/show_notif_checkbox"
-        android:labelFor="@+id/edit_date"
-        android:text="@string/txt_date"
-        android:onClick="showDatePickerDialog"/>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/text_date"
-        android:layout_marginStart="16dp"
-        />
-    <EditText
-        android:id="@+id/edit_date"
+        android:layout_alignBottom="@+id/date_input_layout"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="20dp"
+        android:onClick="showDatePickerDialog"
+        app:srcCompat="@drawable/ic_date_range_black_24dp"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/date_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_date"
-        android:layout_marginStart="16dp"
-        android:inputType="date"
-        tools:text="Mon, April 27, 2015" />
-    <TextView
-        android:id="@+id/text_time"
+        android:layout_below="@+id/show_notif_checkbox"
+        android:layout_toEndOf="@+id/date_picker_image"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:hint="@string/date">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="date"
+            tools:text="Mon, April 27, 2015" />
+    </android.support.design.widget.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/time_picker_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_below="@+id/edit_date"
-        android:labelFor="@+id/edit_time"
-        android:text="@string/txt_time"
-        android:onClick="showTimePickerDialog"/>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/text_time"
-        android:layout_marginStart="16dp"
-        />
-    <EditText
-        android:id="@+id/edit_time"
+        android:layout_below="@+id/date_input_layout"
+        android:layout_alignBottom="@+id/time_input_layout"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="20dp"
+        android:onClick="showTimePickerDialog"
+        app:srcCompat="@drawable/ic_date_range_black_24dp"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/time_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_time"
-        android:layout_marginStart="16dp"
-        android:inputType="time"
-        tools:text="11:59 PM" />
+        android:layout_below="@+id/date_input_layout"
+        android:layout_toEndOf="@+id/time_picker_image"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:hint="@string/time">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="date"
+            tools:text="Mon, April 27, 2015" />
+    </android.support.design.widget.TextInputLayout>
+
     <CheckBox
         android:id="@+id/show_alarm_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/edit_time"
+        android:layout_below="@+id/time_input_layout"
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp" />
     <TextView

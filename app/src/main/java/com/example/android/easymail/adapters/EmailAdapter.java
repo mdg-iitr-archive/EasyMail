@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 
 import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
 import com.example.android.easymail.R;
+import com.example.android.easymail.interfaces.EmailLongClickListener;
+import com.example.android.easymail.interfaces.SenderEmailItemClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.utils.SenderEmail;
@@ -25,6 +27,8 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
 
     private Context context;
     private List<SenderEmail> parentList;
+    private SenderEmailItemClickListener listener;
+    private EmailLongClickListener longListener;
 
     /**
      * Primary constructor. Sets up {@link #mParentList} and {@link #mFlatItemList}.
@@ -42,10 +46,13 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
      * @param parentList List of all parents to be displayed in the RecyclerView that this
      *                   adapter is linked to
      */
-    public EmailAdapter(Context context, @NonNull List<SenderEmail> parentList) {
+    public EmailAdapter(Context context, @NonNull List<SenderEmail> parentList,
+                        SenderEmailItemClickListener listener, EmailLongClickListener longListener) {
         super(parentList);
         this.context = context;
         this.parentList = parentList;
+        this.listener = listener;
+        this.longListener = longListener;
     }
 
     @NonNull
@@ -63,11 +70,11 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
         if (viewType == SenderEmailListItem.TYPE_MESSAGE) {
             itemView = LayoutInflater.from(childViewGroup.getContext()).
                     inflate(R.layout.email_layout, childViewGroup, false);
-            return new EmailViewHolder(itemView);
+            return new EmailViewHolder(itemView, listener, longListener);
         }
         itemView = LayoutInflater.from(childViewGroup.getContext()).
                     inflate(R.layout.load_more_layout, childViewGroup, false);
-        return new EmailViewHolder(itemView);
+        return new EmailViewHolder(itemView, listener, longListener);
     }
 
     @Override

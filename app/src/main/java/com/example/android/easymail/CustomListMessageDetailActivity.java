@@ -30,8 +30,7 @@ public class CustomListMessageDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_custom_list_message_detail);
 
         // initialise realm
-        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
-        realm = Realm.getInstance(configuration);
+        realm = Realm.getDefaultInstance();
 
         // get the first message with the id obtained
         // from the intent.

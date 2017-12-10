@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,4 +16,18 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="8dp" />
-</android.support.constraint.ConstraintLayout>
+
+    <!-- The right navigation drawer -->
+    <android.support.design.widget.NavigationView
+        android:id="@+id/right_drawer"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/right_nav_header_main"
+        app:itemIconTint="@color/White"
+        app:itemTextColor="@color/White"
+        app:menu="@menu/activity_response_right_drawer" />
+</android.support.v4.widget.DrawerLayout>

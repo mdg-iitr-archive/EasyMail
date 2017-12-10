@@ -5,14 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
+import android.view.View;
 
 import com.example.android.easymail.adapters.EmailAdapter;
+import com.example.android.easymail.interfaces.EmailLongClickListener;
 import com.example.android.easymail.interfaces.EndlessScrollListener;
+import com.example.android.easymail.interfaces.SenderEmailItemClickListener;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.services.EmailPullService;
@@ -29,12 +37,15 @@ import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmResults;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements SenderEmailItemClickListener, EmailLongClickListener, NavigationView.OnNavigationItemSelectedListener {
 
+    private DrawerLayout drawerLayout;
+    private NavigationView rightNavigationView;
     private RecyclerView emailRecyclerView;
     private String accessToken;
     private Realm realm;
     private EmailAdapter emailAdapter;
+    private MessageItem messageItem;
     List<SenderEmail> list = new ArrayList<>();
 
     @Override
@@ -81,7 +92,7 @@ public class HomeActivity extends AppCompatActivity {
     private void initRecycler() {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         emailRecyclerView.setLayoutManager(layoutManager);
-        emailAdapter = new EmailAdapter(this, list);
+        emailAdapter = new EmailAdapter(this, list, this, this);
         emailRecyclerView.setAdapter(emailAdapter);
         emailRecyclerView.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) layoutManager) {
             @Override
@@ -103,7 +114,32 @@ public class HomeActivity extends AppCompatActivity {
      * initialise views of the activity
      */
     private void initViews() {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        rightNavigationView = (NavigationView) findViewById(R.id.right_drawer);
         emailRecyclerView = (RecyclerView) findViewById(R.id.email_recycler);
+
+        //set the listeners for the left and right navigation views
+        rightNavigationView.setNavigationItemSelectedListener(this);
+
+        //restrict the swiping of the right drawer
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+
+        //restrict the swiping of the right drawer on closing of left or right drawer
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+            }
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+            }
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
     }
 
     private void initRealm() {
@@ -128,7 +164,8 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                 }
             }
-            messageList.add(new MessageItem(message.getInternalDate(), subject, message.getSnippet()));
+            messageList.add(new MessageItem
+                    (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
             messageList.add(new LoadMoreItem());
             SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
             list.add(senderEmailList);
@@ -188,7 +225,8 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                 }
             }
-            messageList.add(new MessageItem(message.getInternalDate(), subject, message.getSnippet()));
+            messageList.add(new MessageItem
+                    (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
             messageList.add(new LoadMoreItem());
             SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
             list.add(senderEmailList);
@@ -197,4 +235,47 @@ public class HomeActivity extends AppCompatActivity {
         emailAdapter.notifyParentDataSetChanged(true);
         return list.size();
     }
+
+    @Override
+    public void onEmailLongClicked(SenderEmailListItem item) {
+        messageItem = (MessageItem) item;
+        drawerLayout.openDrawer(GravityCompat.END);
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
+    }
+
+    @Override
+    public void onSenderItemClicked(SenderEmailListItem senderEmailListItem) {
+        if (senderEmailListItem.getType() == SenderEmailListItem.TYPE_LOAD_MORE){
+
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Intent editMessageIntent = new Intent(HomeActivity.this, EditMessageActivity.class);
+        switch(item.getItemId()) {
+            case R.id.right_nav_to_do:
+                editMessageIntent.putExtra("listName", "To-Do");
+                editMessageIntent.putExtra("messageId", messageItem.getId());
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_follow_up:
+                editMessageIntent.putExtra("listName", "Follow Up");
+                editMessageIntent.putExtra("messageId", messageItem.getId());
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_launch_events:
+                editMessageIntent.putExtra("listName", "Launch Events");
+                editMessageIntent.putExtra("messageId", messageItem.getId());
+                startActivity(editMessageIntent);
+                break;
+            case R.id.right_nav_business_events:
+                editMessageIntent.putExtra("listName", "Business Events");
+                editMessageIntent.putExtra("messageId", messageItem.getId());
+                startActivity(editMessageIntent);
+                break;
+        }
+        return false;
+    }
 }
+

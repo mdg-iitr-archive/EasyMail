@@ -6,10 +6,12 @@ package com.example.android.easymail.utils;
 
 public class MessageItem extends SenderEmailListItem {
 
+    private String id;
     private Long internalDate;
     private String subject, snippet;
 
-    public MessageItem(Long internalDate, String subject, String snippet) {
+    public MessageItem(String id, Long internalDate, String subject, String snippet) {
+        this.id = id;
         this.internalDate = internalDate;
         this.subject = subject;
         this.snippet = snippet;
@@ -18,6 +20,14 @@ public class MessageItem extends SenderEmailListItem {
     @Override
     public int getType() {
         return TYPE_MESSAGE;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Long getInternalDate() {
