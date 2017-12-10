@@ -122,7 +122,7 @@
     <string name="auto_download_attachment_title">Auto Download Attachments</string>
     <string name="auto_download_attachment_summary">Automatically downloads the attachments from all the contacts.</string>
     <string name="subscription_search_filter">unsubscribe OR opt-out OR "opt out" OR "mail preferences" OR "email preferences" OR "manage notifications" OR "manage your notifications" OR "manage alerts" OR "alert preferences" OR "list:yahoogroups" OR "list:googlegroups" OR "list:listserv" OR "list:groups" OR "list:basecamp" OR "list:anyothers"</string>
-
+        <string name="load_more">LOAD MORE</string>
     <string-array name="metadata_headers_list">
         <item>Delivered-To</item>
         <item>From</item>

@@ -17,6 +17,10 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.services.EmailPullService;
 import com.example.android.easymail.utils.Constants;
+import com.example.android.easymail.utils.LoadMoreItem;
+import com.example.android.easymail.utils.MessageItem;
+import com.example.android.easymail.utils.SenderEmail;
+import com.example.android.easymail.utils.SenderEmailListItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +35,7 @@ public class HomeActivity extends AppCompatActivity {
     private String accessToken;
     private Realm realm;
     private EmailAdapter emailAdapter;
-    List<CurrentDayMessageSendersRealmList> list = new ArrayList<>();
+    List<SenderEmail> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,11 +117,21 @@ public class HomeActivity extends AppCompatActivity {
         RealmResults<Message> response = realm.where(Message.class).equalTo("pageToken", getPageToken()).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
         for (Message message : messages){
-            RealmList<Message> messageList = new RealmList<>();
-            messageList.add(message);
-            CurrentDayMessageSendersRealmList currentDayMessageSendersRealmList =
-                    new CurrentDayMessageSendersRealmList(message.getSender(), messageList);
-            list.add(currentDayMessageSendersRealmList);
+            List<SenderEmailListItem> messageList = new ArrayList<>();
+            String subject = null;
+            for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
+                String check = message.getPayload().getHeaders().get(i).getName();
+                String value = message.getPayload().getHeaders().get(i).getValue();
+                switch (check) {
+                    case "Subject":
+                        subject = value;
+                        break;
+                }
+            }
+            messageList.add(new MessageItem(message.getInternalDate(), subject, message.getSnippet()));
+            messageList.add(new LoadMoreItem());
+            SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
+            list.add(senderEmailList);
         }
         emailAdapter.setParentList(list);
         emailAdapter.notifyParentDataSetChanged(true);
@@ -163,11 +177,21 @@ public class HomeActivity extends AppCompatActivity {
         RealmResults<Message> response = realm.where(Message.class).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
         for (Message message : messages){
-            RealmList<Message> messageList = new RealmList<>();
-            messageList.add(message);
-            CurrentDayMessageSendersRealmList currentDayMessageSendersRealmList =
-                    new CurrentDayMessageSendersRealmList(message.getSender(), messageList);
-            list.add(currentDayMessageSendersRealmList);
+            List<SenderEmailListItem> messageList = new ArrayList<>();
+            String subject = null;
+            for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
+                String check = message.getPayload().getHeaders().get(i).getName();
+                String value = message.getPayload().getHeaders().get(i).getValue();
+                switch (check) {
+                    case "Subject":
+                        subject = value;
+                        break;
+                }
+            }
+            messageList.add(new MessageItem(message.getInternalDate(), subject, message.getSnippet()));
+            messageList.add(new LoadMoreItem());
+            SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
+            list.add(senderEmailList);
         }
         emailAdapter.setParentList(list);
         emailAdapter.notifyParentDataSetChanged(true);

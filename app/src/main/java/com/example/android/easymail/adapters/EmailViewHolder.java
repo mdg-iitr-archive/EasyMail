@@ -7,6 +7,8 @@ import android.widget.TextView;
 import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
 import com.example.android.easymail.R;
 import com.example.android.easymail.models.Message;
+import com.example.android.easymail.utils.MessageItem;
+import com.example.android.easymail.utils.SenderEmailListItem;
 
 /**
  * Created by harshit on 14/10/17.
@@ -32,16 +34,10 @@ public class EmailViewHolder extends ChildViewHolder {
         emailSnippet = (TextView) itemView.findViewById(R.id.snippet);
     }
 
-    public void bind(Message message){
-        for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
-            String check = message.getPayload().getHeaders().get(i).getName();
-            String value = message.getPayload().getHeaders().get(i).getValue();
-            switch (check){
-                case "Subject":
-                    emailSubject.setText(value);
-                    break;
-            }
+    public void bind(SenderEmailListItem item){
+        if (emailSnippet != null && emailSubject != null) {
+            emailSubject.setText(((MessageItem)item).getSubject());
+            emailSnippet.setText(((MessageItem)item).getSnippet());
         }
-        emailSnippet.setText(message.getSnippet());
     }
 }

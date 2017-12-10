@@ -36,9 +36,9 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@+id/email_sender_photo"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:maxLines="1"
-        android:textSize="20sp"
+        android:textSize="16sp"
         tools:text="Medim Daily Digest"/>
     <TextView
         android:id="@+id/last_email_time"
@@ -47,7 +47,7 @@
         android:layout_toEndOf="@+id/email_sender_title"
         android:layout_alignBottom="@+id/email_sender_title"
         android:layout_marginStart="16dp"
-        android:textSize="16sp"
+        android:textSize="12sp"
         tools:text="8:14 am"/>
     <View
         android:id="@+id/view"

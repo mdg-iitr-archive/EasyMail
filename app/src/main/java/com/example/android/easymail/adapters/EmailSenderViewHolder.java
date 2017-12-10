@@ -2,6 +2,7 @@ package com.example.android.easymail.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,8 +13,14 @@ import com.example.android.easymail.R;
 import com.example.android.easymail.api.MessageApi;
 import com.example.android.easymail.api.NetworkingFactory;
 import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
+import com.example.android.easymail.utils.MessageItem;
+import com.example.android.easymail.utils.SenderEmail;
 import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -56,28 +63,30 @@ public class EmailSenderViewHolder extends ParentViewHolder{
         emailSenderPhoto = (ImageView) itemView.findViewById(R.id.email_sender_photo);
     }
 
-    public void bind(CurrentDayMessageSendersRealmList currentDayMessageSendersList){
-        String sender = currentDayMessageSendersList.getSender();
+    public void bind(SenderEmail senderEmail){
+        String sender = senderEmail.getSender();
         String senderEmailCount = Integer.toString
-                (currentDayMessageSendersList.getSenderCurrentDayMessageList().size());
+                (senderEmail.getSenderMessageList().size());
         emailCount.setText(senderEmailCount);
         emailSenderNameInitial.setText(sender.substring(0,1).toUpperCase());
-        String senderEmail = null;
+        String email = null;
         try {
             String senderName = sender.split("<")[0];
             emailSenderTitle.setText(senderName);
-            senderEmail = sender.split("<")[1].split(">")[0];
+            email = sender.split("<")[1].split(">")[0];
         }catch (ArrayIndexOutOfBoundsException e){
             e.printStackTrace();
             emailSenderTitle.setText(sender);
         }
-        lastEmailTime.setText
-                (Long.toString(currentDayMessageSendersList.getSenderCurrentDayMessageList().get(0).getInternalDate()));
-        emailSenderSnippet.setText(currentDayMessageSendersList.getSenderCurrentDayMessageList().get(0).getSnippet());
-        if (senderEmail != null) {
+        Long timestamp = ((MessageItem) senderEmail.getSenderMessageList().get(0)).getInternalDate();
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(timestamp);
+        lastEmailTime.setText(DateFormat.format("dd-MM-yyyy hh:mm:ss", cal));
+        emailSenderSnippet.setText(((MessageItem) senderEmail.getSenderMessageList().get(0)).getSnippet());
+        if (email != null) {
             Retrofit retrofit = NetworkingFactory.getClient();
             MessageApi messageApi = retrofit.create(MessageApi.class);
-            Call<JsonObject> userInfoCall = messageApi.getUserInfo(senderEmail);
+            Call<JsonObject> userInfoCall = messageApi.getUserInfo(email);
             userInfoCall.enqueue(new Callback<JsonObject>() {
                 @Override
                 public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
