@@ -148,7 +148,8 @@ public class SelectedSenderMessagesActivity extends AppCompatActivity implements
                 props.setProperty("mail.store.protocol", "imaps");
                 Session session = Session.getDefaultInstance(props, null);
                 store = session.getStore("imaps");
-                store.connect("imap.googlemail.com", "harshit.bansalec@gmail.com", "");
+                // TODO: insert your own email and password
+                store.connect("imap.googlemail.com", "your_email", "your_password");
                 folder = store.getFolder("inbox"); // This does work for other email account
                 if (!folder.isOpen()) folder.open(Folder.READ_WRITE);
                 SearchTerm sender = new FromTerm(new InternetAddress(address));

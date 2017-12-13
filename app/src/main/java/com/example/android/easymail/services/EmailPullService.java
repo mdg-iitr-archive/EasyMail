@@ -57,7 +57,7 @@ public class EmailPullService extends IntentService {
         final com.google.api.services.gmail.Gmail service = new com.google.api.services.gmail.Gmail.Builder(
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
-        String user = "harshit.bansalec@gmail.com";
+        String user = "me";
         String nextPageToken = null;
         try {
             List<String> labelIds = new ArrayList<>();

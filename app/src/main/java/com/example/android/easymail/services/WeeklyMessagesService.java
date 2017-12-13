@@ -82,7 +82,8 @@ public class WeeklyMessagesService extends IntentService {
         final com.google.api.services.gmail.Gmail service = new com.google.api.services.gmail.Gmail.Builder(
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
-        String user = "harshit.bansalec@gmail.com";
+        // TODO: insert your own email and password
+        String user = "your_email";
 
         ListMessagesResponse listMessagesResponse = null;
 
@@ -274,8 +275,9 @@ public class WeeklyMessagesService extends IntentService {
                                 if (filename != null && filename.length() > 0) {
                                     String attId = part.getBody().getAttachmentId();
                                     try {
+                                        // TODO: insert your own email and password
                                         MessagePartBody attachPart = service.users().messages().attachments().
-                                                get("harshit.bansalec@gmail.com", message.getId(), attId).execute();
+                                                get("your_email", message.getId(), attId).execute();
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }

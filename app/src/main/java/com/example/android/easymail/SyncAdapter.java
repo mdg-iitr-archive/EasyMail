@@ -110,7 +110,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     final com.google.api.services.gmail.Gmail service = new com.google.api.services.gmail.Gmail.Builder(
                             transport, jsonFactory, credential
                     ).setApplicationName("Gmail Api").build();
-                    String user = "harshit.bansalec@gmail.com";
+                    // TODO: insert your own email
+                    String user = "your_email";
                     List<String> messagesId = new ArrayList<String>();
                     ArrayList<com.google.api.services.gmail.model.Message> currentDayMessages = new ArrayList<>();
 

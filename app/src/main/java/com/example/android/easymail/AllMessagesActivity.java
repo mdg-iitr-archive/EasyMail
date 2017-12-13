@@ -237,7 +237,8 @@ public class AllMessagesActivity extends AppCompatActivity implements MailClassi
             store = null;
             try {
                 store = session.getStore("imaps");
-                store.connect("imap.googlemail.com","harshit.bansalec@gmail.com", "");
+                // TODO: insert your own email and password
+                store.connect("imap.googlemail.com","your_email", "your_password");
                 javax.mail.Folder[] folders = store.getDefaultFolder().list("*");
                 for (javax.mail.Folder folder : folders) {
                     if ((folder.getType() & javax.mail.Folder.HOLDS_MESSAGES) != 0) {

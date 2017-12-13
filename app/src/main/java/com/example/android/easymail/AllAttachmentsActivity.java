@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -94,6 +95,7 @@ public class AllAttachmentsActivity extends AppCompatActivity implements Attachm
             super.onPreExecute();
             dialog.setMessage("Retrieving Attachments...");
             dialog.show();
+            Log.i("Start Time", String.valueOf(Calendar.getInstance().getTimeInMillis()));
         }
 
         @Override
@@ -103,12 +105,13 @@ public class AllAttachmentsActivity extends AppCompatActivity implements Attachm
             Session session = Session.getDefaultInstance(props, null);
             try {
                 store = session.getStore("imaps");
-                store.connect("imap.googlemail.com", "harshit.bansalec@gmail.com", "");
+                // TODO: insert your own email and password
+                store.connect("imap.googlemail.com", "your_email", "your_password");
 
                 folder = store.getFolder("inbox"); // This does work for other email account
 
                 if (!folder.isOpen()) folder.open(Folder.READ_WRITE);
-                SearchTerm sender = new FromTerm(new InternetAddress("madanlal7z585@gmail.com"));
+                // SearchTerm sender = new FromTerm(new InternetAddress("madanlal7z585@gmail.com"));
                 javax.mail.Message[] messages = folder.getMessages();
                 FetchProfile profile = new FetchProfile();
                 profile.add(FetchProfile.Item.ENVELOPE);
@@ -157,6 +160,7 @@ public class AllAttachmentsActivity extends AppCompatActivity implements Attachm
                 e.printStackTrace();
             }
             try{
+                Log.i("End Time", String.valueOf(Calendar.getInstance().getTimeInMillis()));
                 folder.close(false);
                 store.close();
             } catch (MessagingException e) {
@@ -216,7 +220,8 @@ public class AllAttachmentsActivity extends AppCompatActivity implements Attachm
         Session session = Session.getDefaultInstance(props, null);
         try {
             store = session.getStore("imaps");
-            store.connect("imap.googlemail.com", "harshit.bansalec@gmail.com", "");
+            // TODO: insert your own email and password
+            store.connect("imap.googlemail.com", "youremail", "yourpassword");
 
             folder = store.getFolder("inbox"); // This does work for other email account
             if (!folder.isOpen()) folder.open(Folder.READ_WRITE);
