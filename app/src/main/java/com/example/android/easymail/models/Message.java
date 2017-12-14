@@ -23,12 +23,21 @@ public class Message extends RealmObject {
     private String pageToken;
     private String threadId;
     private String snippet;
+    private Long date;
     private Long internalDate;
     private String sender;
     private RealmList<RealmString> labelIds;
     private MessagePayload payload;
     private String customListName;
     private CustomListDetails customListDetails;
+
+    public Long getDate() {
+        return date;
+    }
+
+    public void setDate(Long date) {
+        this.date = date;
+    }
 
     public Long getInternalDate() {
         return internalDate;

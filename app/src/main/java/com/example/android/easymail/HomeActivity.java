@@ -31,7 +31,9 @@ import com.example.android.easymail.utils.SenderEmail;
 import com.example.android.easymail.utils.SenderEmailListItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -62,8 +64,8 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
             if (accessToken != null) {
                 Intent emailPullIntent = new Intent(this, EmailPullService.class);
                 emailPullIntent.putExtra("token", accessToken);
-                // getPageToken() always returns null in this case
-                emailPullIntent.putExtra("page_token", getPageToken());
+                // getDate() always returns present date in this case
+                emailPullIntent.putExtra("date", getDate());
                 // getFailedEmailNumber() always returns 1000L in this case
                 emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
                 startService(emailPullIntent);
@@ -73,13 +75,8 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if ((Long) intent.getExtras().get("failed_email_number") == 1000L){
-                    writeFailedEmailNumber(1000L);
-                    writeFailedPageToken(getPageToken());
-                }else{
-                    writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
-                }
-                writePageToken((String) intent.getExtras().get("next_page_token"));
+                writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
+                writeDate((Long) intent.getExtras().get("date"));
                 showCurrentPageMails();
             }
         };
@@ -99,11 +96,7 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
             public void onLoadMore(int page, int totalItemsCount) {
                 Intent emailPullIntent = new Intent(HomeActivity.this, EmailPullService.class);
                 emailPullIntent.putExtra("token", accessToken);
-                if (getFailedEmailNumber() == 1000L) {
-                    emailPullIntent.putExtra("page_token", getPageToken());
-                }else{
-                    emailPullIntent.putExtra("page_token", getFailedPageToken());
-                }
+                emailPullIntent.putExtra("date", getDate());
                 emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
                 startService(emailPullIntent);
             }
@@ -150,7 +143,9 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
      * TODO: needs work for repeated filters
      */
     private void showCurrentPageMails() {
-        RealmResults<Message> response = realm.where(Message.class).equalTo("pageToken", getPageToken()).findAll();
+        Long date = getDate();
+        if (getFailedEmailNumber() == 1000L) date = date + 86400;
+        RealmResults<Message> response = realm.where(Message.class).equalTo("date", date).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
         for (Message message : messages){
             List<SenderEmailListItem> messageList = new ArrayList<>();
@@ -174,39 +169,39 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         emailAdapter.notifyParentDataSetChanged(true);
     }
 
-    private String getPageToken() {
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
-        return preferences.getString("pageToken", null);
+    private Long getDate() {
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
+        return preferences.getLong("date", getCurrentTime());
     }
 
-    private void writePageToken(String pageToken){
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+    private long getCurrentTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        TimeZone timeZone = TimeZone.getDefault();
+        calendar.setTimeZone(timeZone);
+        return calendar.getTimeInMillis()/1000;
+    }
+
+    private void writeDate(Long date){
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("pageToken", pageToken);
-        editor.apply();
-    }
-
-    private String getFailedPageToken() {
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
-        return preferences.getString("failedPageToken", null);
-    }
-
-    private void writeFailedPageToken(String pageToken){
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("failedPageToken", pageToken);
+        editor.putLong("date", date);
         editor.apply();
     }
 
     private void writeFailedEmailNumber(Long failedEmailNumber) {
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong("failedEmailNumber", failedEmailNumber);
         editor.apply();
     }
 
     private Long getFailedEmailNumber() {
-        SharedPreferences preferences = getSharedPreferences("NEXT_PAGE_TOKEN", MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
         return preferences.getLong("failedEmailNumber", 1000L);
     }
 

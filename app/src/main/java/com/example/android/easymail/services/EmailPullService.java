@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.DateFormat;
 
 import com.example.android.easymail.R;
 import com.example.android.easymail.models.MessageHeader;
@@ -49,7 +50,7 @@ public class EmailPullService extends IntentService {
 
         realm = Realm.getDefaultInstance();
         String accessToken = (String) intent.getExtras().get("token");
-        String pageToken = (String) intent.getExtras().get("page_token");
+        Long date = (Long) intent.getExtras().get("date");
         Long failedEmailNumber = (Long) intent.getExtras().get("failed_email_number");
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -58,33 +59,36 @@ public class EmailPullService extends IntentService {
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
         String user = "me";
-        String nextPageToken = null;
+        String queryString = formQueryString(date);
         try {
             List<String> labelIds = new ArrayList<>();
             labelIds.add(Constants.UPDATES_LABEL);
             ListMessagesResponse listMessagesResponse =
                     service.users().messages().list(user).setLabelIds(labelIds)
-                            .setMaxResults(50L).setPageToken(pageToken).execute();
-            nextPageToken = listMessagesResponse.getNextPageToken();
-            totalCount = listMessagesResponse.getResultSizeEstimate() - 2;
+                            .setQ(queryString).execute();
+            totalCount = listMessagesResponse.getResultSizeEstimate();
             if (failedEmailNumber != 1000L){
                 totalCount = totalCount - failedEmailNumber;
             }
-            List<Message> messages = listMessagesResponse.getMessages();
+            List<Message> messages = new ArrayList<>();
+            messages = listMessagesResponse.getMessages();
             long i = failedEmailNumber;
             if (failedEmailNumber == 1000L){
                 i = 0;
             }
             for (; i <  messages.size(); i++){
                 Message message = messages.get((int)i);
-                parseGmailMessage(service, user, nextPageToken, message.getId(), pageToken);
+                parseGmailMessage(date, service, user, message.getId());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         String status;
         failedEmailNumber = 1000L;
-        if (Objects.equals(count, totalCount)) status = "success";
+        if (Objects.equals(count, totalCount)){
+            status = "success";
+            date = date - 86400;
+        }
         else{
             status = "failure";
             failedEmailNumber = count;
@@ -92,13 +96,19 @@ public class EmailPullService extends IntentService {
         Intent localIntent =
                 new Intent(Constants.BROADCAST_ACTION_EMAIL).
                         putExtra(Constants.EXTENDED_DATA_STATUS, status).
-                        putExtra("next_page_token", nextPageToken).
+                        putExtra("date", date).
                         putExtra("failed_email_number", failedEmailNumber);
         // Broadcasts the Intent to receivers in this app.
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    private void parseGmailMessage(Gmail service, String user, String nextPageToken, String messageId, String pageToken) {
+    private String formQueryString(Long date) {
+        String afterDate = Long.toString(date);
+        String beforeDate = Long.toString(date + 86400);
+        return "after:" + afterDate + " " + "before:" + beforeDate;
+    }
+
+    private void parseGmailMessage(Long date, Gmail service, String user, String messageId) {
         String sender;
         Message message = null;
         try {
@@ -113,13 +123,13 @@ public class EmailPullService extends IntentService {
             com.example.android.easymail.models.Message modifiedMessage = new com.example.android.easymail.models.Message();
             modifiedMessage.setId(message.getId());
             modifiedMessage.setThreadId(message.getThreadId());
-            modifiedMessage.setPageToken(nextPageToken);
             RealmList<RealmString> stringList = new RealmList<>();
             for (String labelId : message.getLabelIds()) {
                 stringList.add(new RealmString(labelId));
             }
             modifiedMessage.setLabelIds(stringList);
             modifiedMessage.setSnippet(message.getSnippet());
+            modifiedMessage.setDate(date);
             modifiedMessage.setInternalDate(message.getInternalDate());
             String mimeType = message.getPayload().getMimeType();
             RealmList<MessageHeader> headers = new RealmList<>();
