@@ -15,6 +15,7 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.utils.SenderEmail;
 import com.example.android.easymail.utils.SenderEmailListItem;
+import com.example.android.easymail.utils.SenderListItem;
 
 import java.util.List;
 
@@ -22,11 +23,11 @@ import java.util.List;
  * Created by harshit on 15/10/17.
  */
 
-public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderEmailListItem,
+public class EmailAdapter extends ExpandableRecyclerAdapter<SenderListItem, SenderEmailListItem,
         EmailSenderViewHolder, EmailViewHolder> {
 
     private Context context;
-    private List<SenderEmail> parentList;
+    private List<SenderListItem> parentList;
     private SenderEmailItemClickListener listener;
     private EmailLongClickListener longListener;
 
@@ -46,7 +47,7 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
      * @param parentList List of all parents to be displayed in the RecyclerView that this
      *                   adapter is linked to
      */
-    public EmailAdapter(Context context, @NonNull List<SenderEmail> parentList,
+    public EmailAdapter(Context context, @NonNull List<SenderListItem> parentList,
                         SenderEmailItemClickListener listener, EmailLongClickListener longListener) {
         super(parentList);
         this.context = context;
@@ -58,9 +59,15 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
     @NonNull
     @Override
     public EmailSenderViewHolder onCreateParentViewHolder(@NonNull ViewGroup parentViewGroup, int viewType) {
-        View view = LayoutInflater.from(parentViewGroup.getContext()).
-                inflate(R.layout.email_sender_layout, parentViewGroup, false);
-        return new EmailSenderViewHolder(context, view);
+        View itemView;
+        if (viewType == SenderListItem.TYPE_SENDER) {
+            itemView = LayoutInflater.from(parentViewGroup.getContext()).
+                    inflate(R.layout.email_sender_layout, parentViewGroup, false);
+            return new EmailSenderViewHolder(context, itemView);
+        }
+        itemView = LayoutInflater.from(parentViewGroup.getContext()).
+                inflate(R.layout.day_title_layout, parentViewGroup, false);
+        return new EmailSenderViewHolder(context, itemView);
     }
 
     @NonNull
@@ -78,7 +85,7 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
     }
 
     @Override
-    public void onBindParentViewHolder(@NonNull EmailSenderViewHolder parentViewHolder, int parentPosition, @NonNull SenderEmail parent) {
+    public void onBindParentViewHolder(@NonNull EmailSenderViewHolder parentViewHolder, int parentPosition, @NonNull SenderListItem parent) {
         parentViewHolder.bind(parent);
     }
 
@@ -87,12 +94,22 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderEmail, SenderE
         childViewHolder.bind(child);
     }
 
-    public void setParentList(List<SenderEmail> list){
+    public void setParentList(List<SenderListItem> list){
         this.parentList = list;
     }
 
     @Override
+    public int getParentViewType(int parentPosition) {
+        return parentList.get(parentPosition).getType();
+    }
+
+    @Override
+    public boolean isParentViewType(int viewType) {
+        return viewType == 4 || viewType == 5;
+    }
+
+    @Override
     public int getChildViewType(int parentPosition, int childPosition) {
-        return parentList.get(parentPosition).getChildList().get(childPosition).getType();
+        return ((SenderEmail)parentList.get(parentPosition)).getChildList().get(childPosition).getType();
     }
 }

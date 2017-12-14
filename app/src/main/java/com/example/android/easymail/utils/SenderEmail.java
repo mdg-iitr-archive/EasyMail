@@ -11,7 +11,7 @@ import io.realm.RealmList;
  * Created by harshit on 10/12/17.
  */
 
-public class SenderEmail implements Parent<SenderEmailListItem> {
+public class SenderEmail extends SenderListItem {
 
     private String sender;
     private List<SenderEmailListItem> senderMessageList;
@@ -45,5 +45,10 @@ public class SenderEmail implements Parent<SenderEmailListItem> {
 
     public void setSenderMessageList(List<SenderEmailListItem> senderMessageList) {
         this.senderMessageList = senderMessageList;
+    }
+
+    @Override
+    public int getType() {
+        return TYPE_SENDER;
     }
 }

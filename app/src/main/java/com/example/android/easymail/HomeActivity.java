@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -25,14 +26,17 @@ import com.example.android.easymail.models.CurrentDayMessageSendersRealmList;
 import com.example.android.easymail.models.Message;
 import com.example.android.easymail.services.EmailPullService;
 import com.example.android.easymail.utils.Constants;
+import com.example.android.easymail.utils.DateItem;
 import com.example.android.easymail.utils.LoadMoreItem;
 import com.example.android.easymail.utils.MessageItem;
 import com.example.android.easymail.utils.SenderEmail;
 import com.example.android.easymail.utils.SenderEmailListItem;
+import com.example.android.easymail.utils.SenderListItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import io.realm.Realm;
@@ -48,7 +52,9 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     private Realm realm;
     private EmailAdapter emailAdapter;
     private MessageItem messageItem;
-    List<SenderEmail> list = new ArrayList<>();
+    List<SenderListItem> list = new ArrayList<>();
+
+    private Long offlineEmailDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +150,11 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
      */
     private void showCurrentPageMails() {
         Long date = getDate();
-        if (getFailedEmailNumber() == 1000L) date = date + 86400;
+        if (getFailedEmailNumber() == 1000L){
+            date = date + 86400;
+            list.add(new DateItem(formDateFromTimeStamp(date)));
+        }
+
         RealmResults<Message> response = realm.where(Message.class).equalTo("date", date).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
         for (Message message : messages){
@@ -167,6 +177,13 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         }
         emailAdapter.setParentList(list);
         emailAdapter.notifyParentDataSetChanged(true);
+    }
+
+    private String formDateFromTimeStamp(Long date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getDefault());
+        cal.setTimeInMillis(date * 1000);
+        return (String) DateFormat.format("dd-MM-yyyy", cal);
     }
 
     private Long getDate() {
@@ -208,23 +225,31 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     private int getOfflineMessages() {
         RealmResults<Message> response = realm.where(Message.class).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
-        for (Message message : messages){
-            List<SenderEmailListItem> messageList = new ArrayList<>();
-            String subject = null;
-            for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
-                String check = message.getPayload().getHeaders().get(i).getName();
-                String value = message.getPayload().getHeaders().get(i).getValue();
-                switch (check) {
-                    case "Subject":
-                        subject = value;
-                        break;
+        if (messages.size() != 0) {
+            offlineEmailDate = messages.get(0).getDate();
+            list.add(new DateItem(formDateFromTimeStamp(offlineEmailDate)));
+            for (Message message : messages) {
+                if (!Objects.equals(message.getDate(), offlineEmailDate)) {
+                    offlineEmailDate = message.getDate();
+                    list.add(new DateItem(formDateFromTimeStamp(offlineEmailDate)));
                 }
+                List<SenderEmailListItem> messageList = new ArrayList<>();
+                String subject = null;
+                for (int i = 0; i < message.getPayload().getHeaders().size(); i++) {
+                    String check = message.getPayload().getHeaders().get(i).getName();
+                    String value = message.getPayload().getHeaders().get(i).getValue();
+                    switch (check) {
+                        case "Subject":
+                            subject = value;
+                            break;
+                    }
+                }
+                messageList.add(new MessageItem
+                        (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
+                messageList.add(new LoadMoreItem());
+                SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
+                list.add(senderEmailList);
             }
-            messageList.add(new MessageItem
-                    (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
-            messageList.add(new LoadMoreItem());
-            SenderEmail senderEmailList = new SenderEmail(message.getSender(), messageList);
-            list.add(senderEmailList);
         }
         emailAdapter.setParentList(list);
         emailAdapter.notifyParentDataSetChanged(true);
