@@ -127,6 +127,7 @@
     <string name="notes">Notes</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
+    <string name="menu_refresh">Refresh</string>
     <string-array name="metadata_headers_list">
         <item>Delivered-To</item>
         <item>From</item>

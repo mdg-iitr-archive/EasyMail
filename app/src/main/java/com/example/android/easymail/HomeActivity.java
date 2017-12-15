@@ -10,11 +10,16 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -29,6 +34,7 @@ import com.example.android.easymail.utils.Constants;
 import com.example.android.easymail.utils.DateItem;
 import com.example.android.easymail.utils.LoadMoreItem;
 import com.example.android.easymail.utils.MessageItem;
+import com.example.android.easymail.utils.ProgressItem;
 import com.example.android.easymail.utils.SenderEmail;
 import com.example.android.easymail.utils.SenderEmailListItem;
 import com.example.android.easymail.utils.SenderListItem;
@@ -47,6 +53,7 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
 
     private DrawerLayout drawerLayout;
     private NavigationView rightNavigationView;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView emailRecyclerView;
     private String accessToken;
     private Realm realm;
@@ -55,6 +62,9 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     List<SenderListItem> list = new ArrayList<>();
 
     private Long offlineEmailDate;
+    private boolean isSync = false;
+    private boolean isFirstTimeLaunch = false;
+    private boolean isProgressLayoutAdded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,28 +78,94 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         int offlineMessagesSize = getOfflineMessages();
         if (offlineMessagesSize == 0) {
             if (accessToken != null) {
+                // first time launch
+                isSync = false;
+                isFirstTimeLaunch = true;
                 Intent emailPullIntent = new Intent(this, EmailPullService.class);
+                emailPullIntent.putExtra("isSync", false);
                 emailPullIntent.putExtra("token", accessToken);
+                emailPullIntent.putExtra("isPresentDay", false);
                 // getDate() always returns present date in this case
                 emailPullIntent.putExtra("date", getDate());
                 // getFailedEmailNumber() always returns 1000L in this case
                 emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
                 startService(emailPullIntent);
             }
+        }else{
+            syncMails();
         }
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
-                writeDate((Long) intent.getExtras().get("date"));
-                showCurrentPageMails();
+                if (isProgressLayoutAdded){
+                    isProgressLayoutAdded = false;
+                    list.remove(list.size() - 1);
+                    emailAdapter.notifyParentDataSetChanged(true);
+                }
+                if (isSync) {
+                    writeSyncFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
+                    writeDate((Long) intent.getExtras().get("date"));
+                }else {
+                    writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
+                    writeDate((Long) intent.getExtras().get("date"));
+                    showCurrentPageMails();
+                }
             }
         };
         // Add a intent filter with the desired action
         IntentFilter filter = new IntentFilter(Constants.BROADCAST_ACTION_EMAIL);
         // Register the receiver for the local broadcasts
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+    }
+
+    private void syncMails() {
+        isSync = true;
+        while (!Objects.equals(getMidnightDate(), getMidnightDate(getMostRecentMessageDate()))){
+            Intent emailPullIntent = new Intent(this, EmailPullService.class);
+            emailPullIntent.putExtra("isSync", true);
+            emailPullIntent.putExtra("token", accessToken);
+            emailPullIntent.putExtra("isPresentDay", false);
+            // getDate() always returns present date in this case
+            emailPullIntent.putExtra("date", getMostRecentMessageDate());
+            // getFailedEmailNumber() always returns 1000L in this case
+            emailPullIntent.putExtra("failed_email_number", getSyncFailedEmailNumber());
+            startService(emailPullIntent);
+        }
+        Intent emailPullIntent = new Intent(this, EmailPullService.class);
+        emailPullIntent.putExtra("isSync", true);
+        emailPullIntent.putExtra("isPresentDay", true);
+        emailPullIntent.putExtra("token", accessToken);
+        // getDate() always returns present date in this case
+        emailPullIntent.putExtra("date", getMostRecentMessageDate());
+        // getFailedEmailNumber() always returns 1000L in this case
+        emailPullIntent.putExtra("failed_email_number", getSyncFailedEmailNumber());
+        startService(emailPullIntent);
+    }
+
+    private Long getMidnightDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        TimeZone timeZone = TimeZone.getDefault();
+        calendar.setTimeZone(timeZone);
+        return calendar.getTimeInMillis()/1000;
+    }
+
+    private Long getMidnightDate(Long mostRecentMessageDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(mostRecentMessageDate * 1000);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        TimeZone timeZone = TimeZone.getDefault();
+        calendar.setTimeZone(timeZone);
+        return calendar.getTimeInMillis()/1000;
     }
 
     private void initRecycler() {
@@ -100,6 +176,9 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         emailRecyclerView.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
+                isProgressLayoutAdded = true;
+                list.add(new ProgressItem());
+                emailAdapter.notifyParentDataSetChanged(true);
                 Intent emailPullIntent = new Intent(HomeActivity.this, EmailPullService.class);
                 emailPullIntent.putExtra("token", accessToken);
                 emailPullIntent.putExtra("date", getDate());
@@ -115,7 +194,23 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     private void initViews() {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         rightNavigationView = (NavigationView) findViewById(R.id.right_drawer);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         emailRecyclerView = (RecyclerView) findViewById(R.id.email_recycler);
+
+        /*
+        * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+        * performs a swipe-to-refresh gesture.
+        */
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        syncMails();
+                    }
+                }
+        );
 
         //set the listeners for the left and right navigation views
         rightNavigationView.setNavigationItemSelectedListener(this);
@@ -157,6 +252,9 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
 
         RealmResults<Message> response = realm.where(Message.class).equalTo("date", date).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
+        if (isFirstTimeLaunch){
+            writeMostRecentMessageDate(messages.get(0).getInternalDate());
+        }
         for (Message message : messages){
             List<SenderEmailListItem> messageList = new ArrayList<>();
             String subject = null;
@@ -177,6 +275,18 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         }
         emailAdapter.setParentList(list);
         emailAdapter.notifyParentDataSetChanged(true);
+    }
+
+    private void writeMostRecentMessageDate(Long internalDate) {
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong("mostRecentMessageDate", internalDate);
+        editor.apply();
+    }
+
+    private Long getMostRecentMessageDate() {
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
+        return preferences.getLong("mostRecentMessageDate", getCurrentTime());
     }
 
     private String formDateFromTimeStamp(Long date) {
@@ -220,6 +330,18 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     private Long getFailedEmailNumber() {
         SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
         return preferences.getLong("failedEmailNumber", 1000L);
+    }
+
+    private void writeSyncFailedEmailNumber(Long failedEmailNumber) {
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong("syncFailedEmailNumber", failedEmailNumber);
+        editor.apply();
+    }
+
+    private Long getSyncFailedEmailNumber() {
+        SharedPreferences preferences = getSharedPreferences("NEXT_DATE", MODE_PRIVATE);
+        return preferences.getLong("syncFailedEmailNumber", 1000L);
     }
 
     private int getOfflineMessages() {
@@ -296,6 +418,32 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
                 break;
         }
         return false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.swipe_refresh_menu, menu);
+        return true;
+    }
+
+    /*
+    * Listen for option item selections so that we receive a notification
+    * when the user requests a refresh by selecting the refresh action bar item.
+    */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Check if user triggered a refresh:
+        if (item.getItemId() == R.id.menu_refresh){
+            // Signal SwipeRefreshLayout to start the progress indicator
+            swipeRefreshLayout.setRefreshing(true);
+
+            // Start the refresh background task.
+            // This method calls setRefreshing(false) when it's finished.
+            syncMails();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
 

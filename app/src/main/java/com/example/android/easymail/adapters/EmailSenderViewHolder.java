@@ -70,9 +70,12 @@ public class EmailSenderViewHolder extends ParentViewHolder{
     }
 
     public void bind(SenderListItem senderEmail){
+
         if (date != null){
             date.setText(((DateItem)senderEmail).getDate());
-        }else {
+        }
+
+        if (emailSenderTitle != null){
             String sender = ((SenderEmail)senderEmail).getSender();
             String senderEmailCount = Integer.toString
                     (((SenderEmail)senderEmail).getSenderMessageList().size());

@@ -64,10 +64,15 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderListItem, Send
             itemView = LayoutInflater.from(parentViewGroup.getContext()).
                     inflate(R.layout.email_sender_layout, parentViewGroup, false);
             return new EmailSenderViewHolder(context, itemView);
+        }else if (viewType == SenderListItem.TYPE_DATE) {
+            itemView = LayoutInflater.from(parentViewGroup.getContext()).
+                    inflate(R.layout.day_title_layout, parentViewGroup, false);
+            return new EmailSenderViewHolder(context, itemView);
+        }else{
+            itemView = LayoutInflater.from(parentViewGroup.getContext()).
+                    inflate(R.layout.load_more_progress_layout, parentViewGroup, false);
+            return new EmailSenderViewHolder(context, itemView);
         }
-        itemView = LayoutInflater.from(parentViewGroup.getContext()).
-                inflate(R.layout.day_title_layout, parentViewGroup, false);
-        return new EmailSenderViewHolder(context, itemView);
     }
 
     @NonNull
@@ -105,7 +110,7 @@ public class EmailAdapter extends ExpandableRecyclerAdapter<SenderListItem, Send
 
     @Override
     public boolean isParentViewType(int viewType) {
-        return viewType == 4 || viewType == 5;
+        return viewType == 4 || viewType == 5 || viewType == 6;
     }
 
     @Override

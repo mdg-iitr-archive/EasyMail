@@ -25,8 +25,11 @@ import com.google.api.services.gmail.model.MessagePartHeader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -41,6 +44,8 @@ public class EmailPullService extends IntentService {
     private Long totalCount;
     private Long count = 0L;
 
+    long i;
+
     public EmailPullService() {
         super("");
     }
@@ -49,6 +54,7 @@ public class EmailPullService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
 
         realm = Realm.getDefaultInstance();
+        Boolean isSync = (Boolean) intent.getExtras().get("isSync");
         String accessToken = (String) intent.getExtras().get("token");
         Long date = (Long) intent.getExtras().get("date");
         Long failedEmailNumber = (Long) intent.getExtras().get("failed_email_number");
@@ -67,12 +73,10 @@ public class EmailPullService extends IntentService {
                     service.users().messages().list(user).setLabelIds(labelIds)
                             .setQ(queryString).execute();
             totalCount = listMessagesResponse.getResultSizeEstimate();
-            if (failedEmailNumber != 1000L){
-                totalCount = totalCount - failedEmailNumber;
-            }
-            List<Message> messages = new ArrayList<>();
-            messages = listMessagesResponse.getMessages();
-            long i = failedEmailNumber;
+
+            List<Message> messages = listMessagesResponse.getMessages();
+            if (isSync) Collections.reverse(messages);
+            i = failedEmailNumber;
             if (failedEmailNumber == 1000L){
                 i = 0;
             }
@@ -85,14 +89,26 @@ public class EmailPullService extends IntentService {
         }
         String status;
         failedEmailNumber = 1000L;
-        if (Objects.equals(count, totalCount)){
-            status = "success";
-            date = date - 86400;
-        }
-        else{
+
+        Boolean isPresentDay = (Boolean) intent.getExtras().get("isPresentDay");
+
+        if (isPresentDay){
             status = "failure";
-            failedEmailNumber = count;
+            if (failedEmailNumber == 1000L) failedEmailNumber = 0L;
+            failedEmailNumber = failedEmailNumber + count;
+        }else {
+            if (Objects.equals(i, totalCount)) {
+                status = "success";
+                failedEmailNumber = 1000L;
+                if (isSync) date = getMidnightDate(date) + 86400;
+                else date = date - 86400;
+            } else {
+                status = "failure";
+                if (failedEmailNumber == 1000L) failedEmailNumber = 0L;
+                failedEmailNumber = failedEmailNumber + count;
+            }
         }
+
         Intent localIntent =
                 new Intent(Constants.BROADCAST_ACTION_EMAIL).
                         putExtra(Constants.EXTENDED_DATA_STATUS, status).
@@ -104,8 +120,21 @@ public class EmailPullService extends IntentService {
 
     private String formQueryString(Long date) {
         String afterDate = Long.toString(date);
-        String beforeDate = Long.toString(date + 86400);
+        String beforeDate = Long.toString(getMidnightDate(date) + 86400);
         return "after:" + afterDate + " " + "before:" + beforeDate;
+    }
+
+    private Long getMidnightDate(Long mostRecentMessageDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(mostRecentMessageDate * 1000);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        TimeZone timeZone = TimeZone.getDefault();
+        calendar.setTimeZone(timeZone);
+        return calendar.getTimeInMillis()/1000;
     }
 
     private void parseGmailMessage(Long date, Gmail service, String user, String messageId) {
