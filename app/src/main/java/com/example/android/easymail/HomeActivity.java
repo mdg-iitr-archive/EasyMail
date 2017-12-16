@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
@@ -105,7 +106,8 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
                 }
                 if (isSync) {
                     writeSyncFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
-                    writeDate((Long) intent.getExtras().get("date"));
+                    writeMostRecentMessageDate((Long) intent.getExtras().get("date"));
+                    showSyncMails((Parcelable[]) intent.getExtras().get("parcelables"));
                 }else {
                     writeFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
                     writeDate((Long) intent.getExtras().get("date"));
@@ -238,6 +240,15 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
 
     private void initRealm() {
         realm = Realm.getDefaultInstance();
+    }
+
+    private void showSyncMails(Parcelable[] parcelables) {
+        if (getSyncFailedEmailNumber() == 1000L){
+            list.add(0, new DateItem(formDateFromTimeStamp(getMostRecentMessageDate())));
+        }
+        for (Parcelable parcelable : parcelables){
+            list.add(1, (SenderEmail)parcelable);
+        }
     }
 
     /**

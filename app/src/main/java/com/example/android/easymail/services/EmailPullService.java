@@ -3,6 +3,7 @@ package com.example.android.easymail.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.DateFormat;
@@ -12,6 +13,10 @@ import com.example.android.easymail.models.MessageHeader;
 import com.example.android.easymail.models.MessagePayload;
 import com.example.android.easymail.models.RealmString;
 import com.example.android.easymail.utils.Constants;
+import com.example.android.easymail.utils.LoadMoreItem;
+import com.example.android.easymail.utils.MessageItem;
+import com.example.android.easymail.utils.SenderEmail;
+import com.example.android.easymail.utils.SenderEmailListItem;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
@@ -43,6 +48,7 @@ public class EmailPullService extends IntentService {
     private Realm realm;
     private Long totalCount;
     private Long count = 0L;
+    private List<Parcelable> parcelables;
 
     long i;
 
@@ -112,6 +118,7 @@ public class EmailPullService extends IntentService {
         Intent localIntent =
                 new Intent(Constants.BROADCAST_ACTION_EMAIL).
                         putExtra(Constants.EXTENDED_DATA_STATUS, status).
+                        putExtra("parselables", parcelables.toArray()).
                         putExtra("date", date).
                         putExtra("failed_email_number", failedEmailNumber);
         // Broadcasts the Intent to receivers in this app.
@@ -138,7 +145,7 @@ public class EmailPullService extends IntentService {
     }
 
     private void parseGmailMessage(Long date, Gmail service, String user, String messageId) {
-        String sender;
+        String sender = null;
         Message message = null;
         try {
             message = service.users().messages().get(user, messageId)
@@ -149,6 +156,9 @@ public class EmailPullService extends IntentService {
             e.printStackTrace();
         }
         if (message != null) {
+            List<SenderEmailListItem> messageList = new ArrayList<>();
+            String subject = null;
+
             com.example.android.easymail.models.Message modifiedMessage = new com.example.android.easymail.models.Message();
             modifiedMessage.setId(message.getId());
             modifiedMessage.setThreadId(message.getThreadId());
@@ -168,6 +178,9 @@ public class EmailPullService extends IntentService {
                     sender = header.getValue();
                     modifiedMessage.setSender(sender);
                 }
+                if (name.equals("Subject")){
+                    subject = header.getValue();
+                }
                 headers.add(new MessageHeader(header.getName(), header.getValue()));
             }
             modifiedMessage.setPayload(new MessagePayload(mimeType, headers, null, null , null));
@@ -177,6 +190,13 @@ public class EmailPullService extends IntentService {
             realm.copyToRealmOrUpdate(modifiedMessage);
             realm.commitTransaction();
             count = count + 1;
+
+            messageList.add(new MessageItem
+                    (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
+            messageList.add(new LoadMoreItem());
+
+            SenderEmail senderEmailList = new SenderEmail(sender, messageList);
+            parcelables.add(senderEmailList);
         }
     }
 }
