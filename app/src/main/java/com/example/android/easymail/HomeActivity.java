@@ -105,6 +105,7 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
                     emailAdapter.notifyParentDataSetChanged(true);
                 }
                 if (isSync) {
+                    isSync = false;
                     writeSyncFailedEmailNumber((Long) intent.getExtras().get("failed_email_number"));
                     writeMostRecentMessageDate((Long) intent.getExtras().get("date"));
                     showSyncMails((Parcelable[]) intent.getExtras().get("parcelables"));
@@ -178,14 +179,18 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         emailRecyclerView.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
-                isProgressLayoutAdded = true;
-                list.add(new ProgressItem());
-                emailAdapter.notifyParentDataSetChanged(true);
-                Intent emailPullIntent = new Intent(HomeActivity.this, EmailPullService.class);
-                emailPullIntent.putExtra("token", accessToken);
-                emailPullIntent.putExtra("date", getDate());
-                emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
-                startService(emailPullIntent);
+                if (!isProgressLayoutAdded) {
+                    isProgressLayoutAdded = true;
+                    list.add(new ProgressItem());
+                    emailAdapter.notifyParentDataSetChanged(true);
+                    Intent emailPullIntent = new Intent(HomeActivity.this, EmailPullService.class);
+                    emailPullIntent.putExtra("isSync", false);
+                    emailPullIntent.putExtra("isPresentDay", false);
+                    emailPullIntent.putExtra("token", accessToken);
+                    emailPullIntent.putExtra("date", getDate());
+                    emailPullIntent.putExtra("failed_email_number", getFailedEmailNumber());
+                    startService(emailPullIntent);
+                }
             }
         });
     }
@@ -243,12 +248,14 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
     }
 
     private void showSyncMails(Parcelable[] parcelables) {
+        swipeRefreshLayout.setRefreshing(false);
         if (getSyncFailedEmailNumber() == 1000L){
             list.add(0, new DateItem(formDateFromTimeStamp(getMostRecentMessageDate())));
         }
         for (Parcelable parcelable : parcelables){
             list.add(1, (SenderEmail)parcelable);
         }
+        emailAdapter.notifyParentDataSetChanged(true);
     }
 
     /**
@@ -264,6 +271,7 @@ public class HomeActivity extends AppCompatActivity implements SenderEmailItemCl
         RealmResults<Message> response = realm.where(Message.class).equalTo("date", date).findAll();
         List<Message> messages =  realm.copyFromRealm(response);
         if (isFirstTimeLaunch){
+            isFirstTimeLaunch = false;
             writeMostRecentMessageDate(messages.get(0).getInternalDate());
         }
         for (Message message : messages){

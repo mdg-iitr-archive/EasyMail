@@ -93,7 +93,7 @@ public class EmailSenderViewHolder extends ParentViewHolder{
             Long timestamp = ((MessageItem)
                     ((SenderEmail)senderEmail).getSenderMessageList().get(0)).getInternalDate();
             Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-            cal.setTimeInMillis(timestamp);
+            cal.setTimeInMillis(timestamp * 1000);
             lastEmailTime.setText(DateFormat.format("dd-MM-yyyy hh:mm:ss", cal));
             emailSenderSnippet.setText
                     (((MessageItem) ((SenderEmail)senderEmail).getSenderMessageList().get(0)).getSnippet());

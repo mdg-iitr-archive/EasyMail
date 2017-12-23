@@ -48,7 +48,7 @@ public class EmailPullService extends IntentService {
     private Realm realm;
     private Long totalCount;
     private Long count = 0L;
-    private List<Parcelable> parcelables;
+    private List<Parcelable> parcelables = new ArrayList<>();
 
     long i;
 
@@ -58,12 +58,22 @@ public class EmailPullService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-
+        /*
+         * Get an instance of realm
+         */
         realm = Realm.getDefaultInstance();
+
+        /*
+         * Get data from intent
+         */
         Boolean isSync = (Boolean) intent.getExtras().get("isSync");
         String accessToken = (String) intent.getExtras().get("token");
         Long date = (Long) intent.getExtras().get("date");
         Long failedEmailNumber = (Long) intent.getExtras().get("failed_email_number");
+
+        /*
+         * Initialise credentials for gmail api
+         */
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -71,7 +81,9 @@ public class EmailPullService extends IntentService {
                 transport, jsonFactory, credential
         ).setApplicationName("Gmail Api").build();
         String user = "me";
+
         String queryString = formQueryString(date);
+
         try {
             List<String> labelIds = new ArrayList<>();
             labelIds.add(Constants.UPDATES_LABEL);
@@ -115,10 +127,12 @@ public class EmailPullService extends IntentService {
             }
         }
 
+        Parcelable[] parcelablesArray = new Parcelable[parcelables.size()];
+        parcelables.toArray(parcelablesArray);
         Intent localIntent =
                 new Intent(Constants.BROADCAST_ACTION_EMAIL).
                         putExtra(Constants.EXTENDED_DATA_STATUS, status).
-                        putExtra("parselables", parcelables.toArray()).
+                        putExtra("parcelables", parcelablesArray).
                         putExtra("date", date).
                         putExtra("failed_email_number", failedEmailNumber);
         // Broadcasts the Intent to receivers in this app.
@@ -169,7 +183,7 @@ public class EmailPullService extends IntentService {
             modifiedMessage.setLabelIds(stringList);
             modifiedMessage.setSnippet(message.getSnippet());
             modifiedMessage.setDate(date);
-            modifiedMessage.setInternalDate(message.getInternalDate());
+            modifiedMessage.setInternalDate(message.getInternalDate() / 1000);
             String mimeType = message.getPayload().getMimeType();
             RealmList<MessageHeader> headers = new RealmList<>();
             for (MessagePartHeader header : message.getPayload().getHeaders()) {
@@ -192,10 +206,11 @@ public class EmailPullService extends IntentService {
             count = count + 1;
 
             messageList.add(new MessageItem
-                    (message.getId(), message.getInternalDate(), subject, message.getSnippet()));
+                    (message.getId(), message.getInternalDate() / 1000, subject, message.getSnippet()));
             messageList.add(new LoadMoreItem());
 
             SenderEmail senderEmailList = new SenderEmail(sender, messageList);
+
             parcelables.add(senderEmailList);
         }
     }
